@@ -1,4 +1,3 @@
-import java.util.Scanner;   
 
 public class Espelho {
 Scanner sc = new Scanner(System.in);
