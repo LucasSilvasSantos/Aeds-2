@@ -9,7 +9,10 @@ public class anagrama {
         while (sc.hasNextLine()) {
             String linha = sc.nextLine();
 
-            if (linha.equals("FIM")) {
+                if (linha.length() == 3 && 
+                linha.charAt(0) == 'F' && 
+                linha.charAt(1) == 'I' && 
+                linha.charAt(2) == 'M') {
                 break;
             }
 
@@ -17,6 +20,7 @@ public class anagrama {
             if (partes.length != 2) {
                 System.out.println("N\u00C3O");
                 continue;
+                
             }
 
             String palavra1 = partes[0].trim().toLowerCase();

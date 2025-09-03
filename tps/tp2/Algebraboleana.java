@@ -1,75 +1,80 @@
-import java.util.Scanner;
+import java.util.*;
+
 public class Algebraboleana {
+
+    // Avalia expressão booleana substituindo variáveis pelos valores
+    public static boolean avaliarExpressao(String expr, int[] valores) {
+        // Substituir A, B, C ... pelos valores
+        for (int i = 0; i < valores.length; i++) {
+            char var = (char)('A' + i);
+            expr = expr.replace(var + "", valores[i] + "");
+        }
+
+        // Usar pilha para avaliar expressão
+        Stack<String> stack = new Stack<>();
+        StringBuilder token = new StringBuilder();
+
+        for (int i = 0; i < expr.length(); i++) {
+            char c = expr.charAt(i);
+
+            if (c == '(') {
+                stack.push("(");
+            } else if (c == ')') {
+                // Resolver até achar "("
+                List<String> args = new ArrayList<>();
+                while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                    args.add(stack.pop());
+                }
+                stack.pop(); // remove "("
+                Collections.reverse(args);
+
+                String op = stack.pop(); // operador antes do "("
+                boolean result = false;
+
+                if (op.equals("and")) {
+                    result = true;
+                    for (String a : args) {
+                        result = result && (a.equals("1"));
+                    }
+                } else if (op.equals("or")) {
+                    result = false;
+                    for (String a : args) {
+                        result = result || (a.equals("1"));
+                    }
+                } else if (op.equals("not")) {
+                    result = !(args.get(0).equals("1"));
+                }
+
+                stack.push(result ? "1" : "0");
+            } else if (Character.isLetterOrDigit(c)) {
+                token.append(c);
+                // Quando terminar palavra/numero
+                if (i + 1 == expr.length() || !Character.isLetterOrDigit(expr.charAt(i + 1))) {
+                    stack.push(token.toString());
+                    token.setLength(0);
+                }
+            }
+        }
+
+        return stack.pop().equals("1");
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        
-        while(sc.hasNext()) {
-            // Lê o número de entradas
-            int n = sc.nextInt();
-            
-            // Lê os valores binários
-            boolean[] valores = new boolean[n];
-            for(int i = 0; i < n; i++) {
-                valores[i] = sc.nextInt() == 1;
+        int n = sc.nextInt();
+
+        while (n > 0) {
+            int[] valores = new int[n];
+            for (int i = 0; i < n; i++) {
+                valores[i] = sc.nextInt();
             }
-            
-            // Lê a expressão (resto da linha)
-            sc.nextLine(); // Limpa o buffer
-            String expressao = sc.nextLine();
-            
-            // Avalia a expressão
-            boolean resultado = avaliarExpressao(expressao, valores);
-            
-            // Imprime resultado
-            System.out.println(resultado ? "SIM" : "NAO");
+            String expr = sc.nextLine().trim();
+
+            boolean resultado = avaliarExpressao(expr, valores);
+            System.out.println(resultado ? "1" : "0");
+
+            n = sc.nextInt();
         }
         sc.close();
-    }
-    
-    public static boolean avaliarExpressao(String expressao, boolean[] valores) {
-        // Substitui as letras pelos valores
-        for(int i = 0; i < valores.length; i++) {
-            char letra = (char)('A' + i);
-            expressao = expressao.replace(String.valueOf(letra), 
-                                       String.valueOf(valores[i]));
-        }
-        
-        // Remove espaços e parênteses desnecessários
-        expressao = expressao.replaceAll("\\s+", "");
-        
-        // Avalia NOT
-        while(expressao.contains("not")) {
-            int index = expressao.indexOf("not");
-            boolean valor = Boolean.parseBoolean(
-                expressao.substring(index + 3, index + 8));
-            expressao = expressao.substring(0, index) + (!valor) + 
-                       expressao.substring(index + 8);
-        }
-        
-        // Avalia AND
-        while(expressao.contains("and")) {
-            int index = expressao.indexOf("and");
-            boolean valor1 = Boolean.parseBoolean(
-                expressao.substring(index - 5, index));
-            boolean valor2 = Boolean.parseBoolean(
-                expressao.substring(index + 3, index + 8));
-            expressao = expressao.substring(0, index - 5) + 
-                       (valor1 && valor2) + 
-                       expressao.substring(index + 8);
-        }
-        
-        // Avalia OR
-        while(expressao.contains("or")) {
-            int index = expressao.indexOf("or");
-            boolean valor1 = Boolean.parseBoolean(
-                expressao.substring(index - 5, index));
-            boolean valor2 = Boolean.parseBoolean(
-                expressao.substring(index + 2, index + 7));
-            expressao = expressao.substring(0, index - 5) + 
-                       (valor1 || valor2) + 
-                       expressao.substring(index + 7);
-        }
-        
-        return Boolean.parseBoolean(expressao);
     }
 }
