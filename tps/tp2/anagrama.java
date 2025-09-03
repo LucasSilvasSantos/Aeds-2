@@ -13,9 +13,9 @@ public class anagrama {
                 break;
             }
 
-            String[] partes = linha.split(" - ");
+            String[] partes = linha.split("-");
             if (partes.length != 2) {
-                System.out.println("NAO");
+                System.out.println("N\u00C3O");
                 continue;
             }
 
@@ -23,7 +23,7 @@ public class anagrama {
             String palavra2 = partes[1].trim().toLowerCase();
 
             if (palavra1.length() != palavra2.length()) {
-                System.out.println("NAO");
+                System.out.println("N\u00C3O");
                 continue;
             }
 
@@ -34,7 +34,6 @@ public class anagrama {
                 contagem1[palavra1.charAt(i)]++;
                 contagem2[palavra2.charAt(i)]++;
             }
-
             boolean anagrama = true;
             for (int i = 0; i < 256; i++) {
                 if (contagem1[i] != contagem2[i]) {
@@ -43,7 +42,7 @@ public class anagrama {
                 }
             }
 
-            System.out.println(anagrama ? "SIM" : "NAO");
+            System.out.println(anagrama ? "SIM" : "N\u00C3O");
         }
 
         sc.close();
