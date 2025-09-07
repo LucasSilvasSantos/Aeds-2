@@ -57,26 +57,21 @@ Tarefa desempilharEmergencia(PilhaEmergencia* p){
         Tarefa desempilhada;
         desempilhada = p->pilha[p->n];
       p->n--; //desinfelirei o ultimo elemento
-     return p->pilha[p->n];// retornando o ultimo elemento
+     return p->pilha[p->n];// retornando o ultimo elemento ou seja  valor ja desempilhado
 
 
-    }  // TO DO: IMPLEMENTAR // desempilhar uma tarefa da pilha
+    }  
 }
 
 void enfileirarPeriodica(FilaPeriodica* f, Tarefa t){
-    if ((f->ultimo+1) % MAX_PERIODICA == f->primeiro){
+    if ((f->ultimo+1) % MAX_PERIODICA == f->primeiro){ //confiro se todos os elementos estao prenchidos  e faco com que o ultimo volte para o inicio
       printf("Fila cheia\n");
       return;
     }
     else {  
       f->fila[(f->ultimo+1) % MAX_PERIODICA]=t; // enfilerei a tarefa depois da ultima posicao,e para nao sobrepor eu faco a divisao do max periodica
- f->ultimo    
+      f->ultimo = (f->ultimo+1) % MAX_PERIODICA; // atualizando a posicao do ultimo    
     }
-    
-    
-    
-    // TO DO: IMPLEMENTAR
-    // enfilierar um elemento na fila
 }
 
 Tarefa desenfileirarPeriodica(FilaPeriodica* f){
