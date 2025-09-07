@@ -80,14 +80,32 @@ void enfileirarPeriodica(FilaPeriodica* f, Tarefa t){
 }
 
 Tarefa desenfileirarPeriodica(FilaPeriodica* f){
+    if (f->primeiro == f->ultimo){
+ printf("Fila vazia\n");
+    }
+    else{
+   Tarefa t = f->fila[f->primeiro]; // pegando o elemento da primeira posição 
+   f->primeiro =(f->primeiro+1) %MAX_PERIODICA; // incrementando a posicao do primeiro elemento 
+   f->primeiro;
+    }
+    
     // TO DO: IMPLEMENTAR
-    // desinfileirar uma tarefa da fila
+    //   // desinfileirar uma tarefa da fila
 }
 
 void inserirBackground(ListaBackground* l, Tarefa t){
-    // TO DO: IMPLEMENTAR
-    // inserir uma tarefa na lista
+    if (l->n>=MAX_BACKGROUND){ // faço a averificação se a lsita da pilha esta cheia 
+printf("Lista cheia\n");
+    }
+    int i = l-> n-1; //começando a varredura pelo final da lista 
 }
+   while (i>= 0 && l->lista[i].prioridade >t.prioridade) { // esta deslocando todos os elementos com prioridade pior ou seja com maior valor numera para posições a direta  usando o 
+                                                           // > siginifica se a prrioridade do elemento atual for maio que  ele precisa ficar depois de t , pois e menos prioritario
+                                                          // mantendo a lista ordenada por prioridade Ascsendente (0,1,2,3 ...)
+   l->lista[i+1] = l->lista[i]; // delosco o elemento atual para a direita
+   l-> n++; // aumentando o contando dos numeros 
+
+   }
 
 Tarefa removerBackground(ListaBackground* l){
     // TO DO: IMPLEMENTAR
