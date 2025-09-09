@@ -94,7 +94,7 @@ printf("Lista cheia\n");
     }
     int i = l-> n-1; //começando a varredura pelo final da lista 
 }
-   while (i>= 0 && l->lista[i].prioridade >t.prioridade) { // esta deslocando todos os elementos com prioridade pior ou seja com maior valor numera para posições a direta  usando o 
+   while (i>= 0 && l->lista[i].prioridade ->t.prioridade) { // esta deslocando todos os elementos com prioridade pior ou seja com maior valor numera para posições a direta  usando o 
                                                            // > siginifica se a prrioridade do elemento atual for maio que  ele precisa ficar depois de t , pois e menos prioritario
                                                           // mantendo a lista ordenada por prioridade Ascsendente (0,1,2,3 ...)
    l->lista[i+1] = l->lista[i]; // delosco o elemento atual para a direita

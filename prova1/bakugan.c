@@ -4,13 +4,13 @@
 
 int main() {
 	int R = 0;
-	scanf("%d", &R); // ler rodadas
+	scanf("%d", &R); // ler rodadas pois o jogo e composto por R rodadas
 	
 	while (R != 0) {
 		int Mi[R]; // Mark
 		int Li[R]; // Leti
-		int somaMi = 0; 
-		int somaLi = 0; 
+		int somaMi = 0; //soma dos pontos de Mark
+		int somaLi = 0; // soma dos pontos de leti
 		bool liberouMi = false; 
 		bool liberouLi = false;
 
