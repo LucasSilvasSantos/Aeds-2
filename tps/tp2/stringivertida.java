@@ -12,11 +12,14 @@ public class stringivertida {
             for (int i = s.length() - 1; i >= 0; i--) {
                 invertida += s.charAt(i);
             }
-             
+          
+           if (s.charAt(0)== 'M' && s.charAt(1) == 'I' && s.charAt(2) == 'F') {
+                break;
+            }
 
             System.out.println(invertida);
         }
-
+ 
         sc.close();
     }
 }
