@@ -1,134 +1,142 @@
-#include<stdio.h>
+#include <stdio.h>
 
 #define MAX_EMERGENCIA 5
 #define MAX_PERIODICA 5
 #define MAX_BACKGROUND 30
 
 typedef struct {
-    int id ;
-    int prioridade ; // 0 -10 (0 = maxima prioridade )
-} Tarefa ;
+    int id;
+    int prioridade;
+} Tarefa;
 
 typedef struct {
-    Tarefa pilha[MAX_EMERGENCIA] ; // pilha de tarefas
-    int n; // numero de tarefas na lista
-} PilhaEmergencia ;
+    Tarefa pilha[MAX_EMERGENCIA];
+    int n;
+} PilhaEmergencia;
 
 typedef struct {
-    Tarefa fila[MAX_PERIODICA] ; // fila de tarefas
-    int primeiro; // posicao do primeiro
-    int ultimo; // posicao do ultimo 
-} FilaPeriodica ;
+    Tarefa fila[MAX_PERIODICA];
+    int primeiro;
+    int ultimo;
+} FilaPeriodica;
 
 typedef struct {
-    Tarefa lista[MAX_BACKGROUND] ; // lista de tarefas
-    int n; // numero de tarefas na lista
-} ListaBackground ;
+    Tarefa lista[MAX_BACKGROUND];
+    int n;
+} ListaBackground;
 
-Tarefa processarTarefa(PilhaEmergencia* p, FilaPeriodica* f, ListaBackground* l){
-    // TO DO: IMPLEMENTAR
-    // desempilhar uma tarefa da pilha (se houver)
-    // OU desinfileirar uma tarefa da fila (se houver)
-    // OU retirar a tarefa mais prioritária da lista
+Tarefa processarTarefa(PilhaEmergencia *p, FilaPeriodica *f, ListaBackground *l) {
+    if (p->n > 0) return desempilharEmergencia(p);
+    else if (f->primeiro != f->ultimo) return desenfileirarPeriodica(f);
+    else if (l->n > 0) return removerBackground(l);
 }
 
-void promoverTarefa(PilhaEmergencia* p, ListaBackground* l, int id){
-    // TO DO: IMPLEMENTAR
-    // passar a tarefa de identificador id da lista para a pilha
+void promoverTarefa(PilhaEmergencia *p, ListaBackground *l, int id) {
+    for (int i = 0; i < l->n; i++) {
+        if (l->lista[i].id == id) {
+            Tarefa t = l->lista[i];
+            for (int j = i; j < l->n - 1; j++) l->lista[j] = l->lista[j+1];
+            l->n--;
+            empilharEmergencia(p, t);
+            return;
+        }
+    }
 }
 
-void empilharEmergencia(PilhaEmergencia* p, Tarefa t){
-    if (p->n >= MAX_EMERGENCIA){
-      printf("Pilha cheia\n");
+void empilharEmergencia(PilhaEmergencia *p, Tarefa t) {
+    if (p->n >= MAX_EMERGENCIA) {
+        printf("Pilha cheia!\n");
+        return;
+    } else {
+        p->pilha[p->n] = t;
+        p->n++;
+    }
+}
+
+Tarefa desempilharEmergencia(PilhaEmergencia *p) {
+    if (p->n == 0) {
+        printf("Pilha vazia!\n");
+        return;
+    } else return p->pilha[--p->n];
+}
+
+void enfileirarPeriodica(FilaPeriodica *f, Tarefa t) {
+    if ((f->ultimo + 1) % MAX_PERIODICA == f->primeiro) {
+        printf("Fila cheia!\n");
+        return;
+    } else {
+        f->fila[(f->ultimo+1) % MAX_PERIODICA] = t;
+        f->ultimo = (f->ultimo+1) % MAX_PERIODICA;
+    }
+}
+
+Tarefa desenfileirarPeriodica(FilaPeriodica *f) {
+    if (f->primeiro == f->ultimo) {
+        printf("Fila vazia!\n");
+        return;
+    } else {
+        Tarefa desenfileirada = f->fila[f->primeiro];
+        f->primeiro = (f->primeiro + 1) % MAX_PERIODICA;
+        return desenfileirada;
+    }
+}
+
+void inserirBackground(ListaBackground *l, Tarefa t) {
+    if (l->n >= MAX_BACKGROUND) {
+        printf("Lista cheia!\n");
+        return;
     }
     else {
-      p->pilha[p->n] = t;//empilhando a tarefa na posicao n
-      p->n++; // aumentando o contador de acordo com o numero de n
-    }    
-    // TO DO: IMPLEMENTAR
-   // empilhar uma tarefa na pilha
-}
-
-Tarefa desempilharEmergencia(PilhaEmergencia* p){
-    if(p->n<=0){
- printf("Pilha vazia\n");
-    }
-    else if (p->n >0){
-        Tarefa desempilhada;
-        desempilhada = p->pilha[p->n];
-      p->n--; //desinfelirei o ultimo elemento
-     return p->pilha[p->n];// retornando o ultimo elemento ou seja  valor ja desempilhado
-
-
-    }  
-}
-
-void enfileirarPeriodica(FilaPeriodica* f, Tarefa t){
-    if ((f->ultimo+1) % MAX_PERIODICA == f->primeiro){ //confiro se todos os elementos estao prenchidos  e faco com que o ultimo volte para o inicio
-      printf("Fila cheia\n");
-      return;
-    }
-    else {  
-      f->fila[(f->ultimo+1) % MAX_PERIODICA]=t; // enfilerei a tarefa depois da ultima posicao,e para nao sobrepor eu faco a divisao do max periodica
-      f->ultimo = (f->ultimo+1) % MAX_PERIODICA; // atualizando a posicao do ultimo    
+        l->lista[l->n] = t;
+        l->n++;
     }
 }
 
-Tarefa desenfileirarPeriodica(FilaPeriodica* f){
-    if (f->primeiro == f->ultimo){
- printf("Fila vazia\n");
+Tarefa removerBackground(ListaBackground *l) {
+    if (l->n == 0) {
+        printf("Lista vazia!\n");
+        return;
+    } else {
+        for (int i = 0; i < l->n - 1; i++) l->lista[i] = l->lista[i+1];
+        l->n--;
+        return l->lista[0];
     }
-    else{
-   Tarefa t = f->fila[f->primeiro]; // pegando o elemento da primeira posição 
-   f->primeiro =(f->primeiro+1) %MAX_PERIODICA; // incrementando a posicao do primeiro elemento 
-   f->primeiro;
+}
+
+void imprimirEstruturas(PilhaEmergencia *p, FilaPeriodica *f, ListaBackground *l) {
+    if (p->n == 0 && f->primeiro == f->ultimo && l->n == 0) {
+        printf("Nenhuma tarefa pendente\n");
+        return;
     }
-    
-    // TO DO: IMPLEMENTAR
-    //   // desinfileirar uma tarefa da fila
-}
-
-void inserirBackground(ListaBackground* l, Tarefa t){
-    if (l->n>=MAX_BACKGROUND){ // faço a averificação se a lsita da pilha esta cheia 
-printf("Lista cheia\n");
+    else if (p->n > 0) {
+        printf("Pilha de Emergencia: ");
+        for (int i = p->n - 1; i >= 0; i--) printf("%d ", p->pilha[i].id);
     }
-    int i = l-> n-1; //começando a varredura pelo final da lista 
-}
-   while (i>= 0 && l->lista[i].prioridade ->t.prioridade) { // esta deslocando todos os elementos com prioridade pior ou seja com maior valor numera para posições a direta  usando o 
-                                                           // > siginifica se a prrioridade do elemento atual for maio que  ele precisa ficar depois de t , pois e menos prioritario
-                                                          // mantendo a lista ordenada por prioridade Ascsendente (0,1,2,3 ...)
-   l->lista[i+1] = l->lista[i]; // delosco o elemento atual para a direita
-   l-> n++; // aumentando o contando dos numeros 
-
-   }
-
-Tarefa removerBackground(ListaBackground* l){
-    // TO DO: IMPLEMENTAR
-    // remover a tarefa mais prioritaria da lista
+    else if (f->primeiro != f->ultimo) {
+        printf("Fila Periodica: ");
+        for (int i = f->primeiro; i < f->ultimo; i++) printf("%d ", f->fila[i].id);
+    }
+    else if (l->n > 0) {
+        printf("Lista Background: ");
+        for (int i = 0; i < l->n; i++) printf("%d ", l->lista[i].id);
+    }
 }
 
-void imprimirEstruturas(PilhaEmergencia* p, FilaPeriodica* f, ListaBackground* l){
-    // TO DO: IMPLEMENTAR
-    // printar a pilha, lista e fila
-}
-
-
-void criarTarefa(PilhaEmergencia* p, FilaPeriodica* f, ListaBackground* l){
+void criarTarefa(PilhaEmergencia *p, FilaPeriodica *f, ListaBackground *l) {
     Tarefa tarefa;
-    printf("ID: ");
-    scanf("%d", &tarefa.id);
-    printf("Prioridade: ");
-    scanf("%d", &tarefa.prioridade);
-    printf("1-Inserir na Pilha\n2-Inserir na Fila\n3-Inserir na lista\n");
-    int local;
-    printf("Onde Inserir: ");
-    scanf("%d", &local);
-    if(local == 1) empilharEmergencia(p, tarefa);
-    else if(local == 2) enfileirarPeriodica(f, tarefa);
-    else inserirBackground(l, tarefa);
+    printf("ID: "); scanf("%d", &tarefa.id);
+    printf("Prioridade: "); scanf("%d", &tarefa.prioridade);
+    printf("1 - Inserir na Pilha\n2 - Inserir na Fila\n3 - Inserir na lista\n");
+    int op; scanf("%d", &op);
+    switch (op) {
+        case 1: empilharEmergencia(p, tarefa); break;
+        case 2: enfileirarPeriodica(f, tarefa); break;
+        case 3: inserirBackground(l, tarefa); break;
+        default: printf("Opcao invalida!\n"); return;
+    }
 }
 
-int main(){
+int main() {
     PilhaEmergencia pilha;
     pilha.n = 0;
     FilaPeriodica fila;
@@ -137,28 +145,30 @@ int main(){
     ListaBackground lista;
     lista.n = 0;
 
-    int opcao;
-    printf("########\n1-Criar Tarefa\n2-Processar Tarefa\n3-Promover Tarefa\n0-Sair\n");
-    printf("Entre com a opcao: ");    
-    scanf("%d", &opcao);
-    while(opcao != 0){
-        if(opcao == 1){
-            criarTarefa(&pilha, &fila, &lista);
-        }else if(opcao == 2){
-            Tarefa processada = processarTarefa(&pilha, &fila, &lista);
-            printf("Processei tarefa %d\n", processada.id);
-        }else if(opcao == 3){
-            printf("Qual o ID da tarefa a ser promovida?\n");
-            int id;
-            scanf("%d", &id);
-            promoverTarefa(&pilha, &lista, id);
+    int op;
+    do {
+        printf("\nMENU\n");
+        printf("\n1 - Criar Tarefa");
+        printf("\n2 - Processar Tarefa");
+        printf("\n3 - Promover Tarefa");
+        printf("\n0 - Sair\n");
+        printf("Entre com a opcao: ");
+        scanf("%d", &op);
+        switch (op) {
+            case 1: criarTarefa(&pilha, &fila, &lista); break;
+            case 2:
+                Tarefa processada = processarTarefa(&pilha, &fila, &lista);
+                printf("Processei tarefa %d\n", processada.id);
+                break;
+            case 3:
+                printf("Qual o ID da tarefa a ser promovida?\n");
+                int id; scanf("%d", &id);
+                promoverTarefa(&pilha, &lista, id);
+                break;
+            case 0: printf("Saindo...\n"); break;
+            default: printf("Opcao invalida!\n"); break;
         }
-
         imprimirEstruturas(&pilha, &fila, &lista);
-
-        printf("########\n1-Criar Tarefa\n2-Processar Tarefa\n3-Promover Tarefa\n0-Sair\n");
-        printf("Entre com a opcao: ");    
-        scanf("%d", &opcao);
-    }
+    } while (op != 0);
     return 0;
 }
