@@ -14,22 +14,22 @@ import java.util.regex.*;
  */
 public class exercicio1 {
     public static void main(String[] args) {
-        String file = args.length > 0 ? args[0] : "/tmp/games.csv";
-        List<Game> games = new ArrayList<>();
+        String file = args.length > 0 ? args[0] : "/tmp/games.csv"; // Define o nome do arquivo Csv que vai ser lido  usando argumento de linha de comando ou padrão
+        List<Game> games = new ArrayList<>(); // crio uma lista para armazenar o objetos do tipo game 
 
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {  // atraves do BufferedReader leio o arquivo
             // ler cabeçalho (registro completo pode ocupar várias linhas)
             String headerRecord = CsvParser.readNextRecord(br);
             if (headerRecord == null) {
                 System.out.println("Arquivo vazio ou não encontrado.");
                 return;
             }
-            List<String> headerFields = CsvParser.parseLine(headerRecord);
-            int expectedCols = headerFields.size();
+            List<String> headerFields = CsvParser.parseLine(headerRecord); // separo os campos do cabeçalho
+            int expectedCols = headerFields.size(); // guardo o numero esperado de colunas 
 
             // ler registros
             String record;
-            while ((record = CsvParser.readNextRecord(br)) != null) {
+            while ((record = CsvParser.readNextRecord(br)) != null) { // leio cada registro completo e verifico se é nulo)
                 List<String> fields = CsvParser.parseLine(record);
                 if (fields.size() < expectedCols) {
                     // Aviso: linha com número inesperado de colunas (pule/ignore)
@@ -307,23 +307,23 @@ public class exercicio1 {
         }
 
         @Override
-        public String toString() {
-            return "Game{" +
-                    "id=" + id +
-                    ", name='" + name + '\'' +
-                    ", releaseDate='" + releaseDate + '\'' +
-                    ", estimatedOwners=" + estimatedOwners +
-                    ", price=" + price +
-                    ", supportedLanguages=" + supportedLanguages +
-                    ", metacriticScore=" + metacriticScore +
-                    ", userScore=" + userScore +
-                    ", achievements=" + achievements +
-                    ", publishers=" + publishers +
-                    ", developers=" + developers +
-                    ", categories=" + categories +
-                    ", genres=" + genres +
-                    ", tags(size)=" + tags.size() +
-                    '}';
-        }
+        @Override
+public String toString() {
+    return "=> " + id + " ## " +
+            name + " ## " +
+            releaseDate + " ## " +
+            estimatedOwners + " ## " +
+            price + " ## " +
+            supportedLanguages + " ## " +
+            metacriticScore + " ## " +
+            userScore + " ## " +
+            achievements + " ## " +
+            publishers + " ## " +
+            developers + " ## " +
+            categories + " ## " +
+            genres + " ## " +
+            tags + " ##";
+}
+
     }
 }
