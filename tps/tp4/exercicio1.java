@@ -13,45 +13,42 @@ import java.util.regex.*;
  * AppID,Name,Release date,Estimated owners,Price,Supported languages,Metacritic score,User score,Achievements,Publishers,Developers,Categories,Genres,Tags
  */
 public class exercicio1 {
-    public static void main(String[] args) {
-        String file = args.length > 0 ? args[0] : "/tmp/games.csv"; // Define o nome do arquivo Csv que vai ser lido  usando argumento de linha de comando ou padrão
-        List<Game> games = new ArrayList<>(); // crio uma lista para armazenar o objetos do tipo game 
+    // Método utilitário para converter String em int com valor padrão
+    public static int parseIntDefault(String s, int def) {
+        if (s == null) return def;// se a string for nulla eu retorono o valor padrão dela 
+        s = s.trim();//removo os espaços extras
+        if (s.isEmpty()) return def; // se a string for vaziar eu retorno o valor padrão dela
+        try { return Integer.parseInt(s); } catch (Exception e) { return def; } // tento converter a string em inteiro, se falhar retorno o valor padrão
+    }
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);// declaro o scanner para ler as entradas
+        String procurarId = sc.nextLine();// leio o primeiro id 
 
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {  // atraves do BufferedReader leio o arquivo
-            // ler cabeçalho (registro completo pode ocupar várias linhas)
-            String headerRecord = CsvParser.readNextRecord(br);
-            if (headerRecord == null) {
-                System.out.println("Arquivo vazio ou não encontrado.");
-                return;
-            }
-            List<String> headerFields = CsvParser.parseLine(headerRecord); // separo os campos do cabeçalho
-            int expectedCols = headerFields.size(); // guardo o numero esperado de colunas 
+        while (!procurarId.equals("FIM")) { //enquanto o id lido for diferente de Fim 
+            boolean encontrado = false; // testo  para saber se ache o jogo com o id procurado
+            BufferedReader br = new BufferedReader(new FileReader("/tmp/games.csv"));// abro o arquivo csv
+            String header = br.readLine(); // pula cabeçalho
+            String linha;
+            int idBuscado = parseIntDefault(procurarId, 0); // converto o id buscado para inteiro 
 
-            // ler registros
-            String record;
-            while ((record = CsvParser.readNextRecord(br)) != null) { // leio cada registro completo e verifico se é nulo)
-                List<String> fields = CsvParser.parseLine(record);
-                if (fields.size() < expectedCols) {
-                    // Aviso: linha com número inesperado de colunas (pule/ignore)
-                    System.err.println("Linha com colunas inesperadas (pulando): " + record.substring(0, Math.min(80, record.length())) + "...");
-                    continue;
+            while ((linha = br.readLine()) != null) { // leio cada linha do csv enquanto não chegar no final do arquivo
+                List<String> fields = CsvParser.parseLine(linha); // separa em linha os campos 
+                if (fields.size() < 14) continue; // ignoro linhas com o tamanho menor que 14
+                int idLinha = parseIntDefault(fields.get(0), 0); //pego o id da linha atual e o converto para inteiro 
+                if (idLinha == idBuscado) {// confiro se o id da linha e igual ao id buscado
+                    encontrado = true;// achei o jogo com o id procurado
+                    Game g = Game.fromCsvFields(fields);// crio o jogo a partir dos campos 
+                    System.out.println(g); 
+                    break;
                 }
-                Game g = Game.fromCsvFields(fields);
-                games.add(g);
             }
-
-            System.out.println("Jogos carregados: " + games.size());
-            // imprime os primeiros 5 para inspeção
-            for (int i = 0; i < Math.min(5, games.size()); i++) {
-                System.out.println(games.get(i));
-                System.out.println("--------------------------------------------------");
+            if (!encontrado) {
+                System.out.println("Jogo com ID " + procurarId + " não encontrado!"); // se não achei o jogo com o id procurado
             }
-
-        } catch (FileNotFoundException e) {
-            System.err.println("Arquivo não encontrado: " + file);
-        } catch (IOException e) {
-            e.printStackTrace();
+            br.close();
+            procurarId = sc.nextLine(); // leio o próximo id
         }
+        sc.close();
     }
 
     /** Parser CSV simples, mas que trata aspas duplas e vírgulas internas e quebras de linha em campos. */
@@ -178,8 +175,11 @@ public class exercicio1 {
         private static float parseUserScore(String s) {
             s = unquote(s).trim().toLowerCase();
             if (s.isEmpty() || s.equals("tbd")) return -1.0f;
+            // Se o campo for zero, retorna 0.0 corretamente
+            if (s.equals("0") || s.equals("0.0")) return 0.0f;
             s = s.replaceAll("[^0-9,.-]", "");
             s = s.replace(',', '.');
+            if (s.isEmpty()) return -1.0f;
             try { return Float.parseFloat(s); } catch (Exception e) { return -1.0f; }
         }
 
@@ -307,9 +307,8 @@ public class exercicio1 {
         }
 
         @Override
-        @Override
-public String toString() {
-    return "=> " + id + " ## " +
+    public String toString() {
+        return id + " ## " +
             name + " ## " +
             releaseDate + " ## " +
             estimatedOwners + " ## " +
@@ -323,7 +322,7 @@ public String toString() {
             categories + " ## " +
             genres + " ## " +
             tags + " ##";
-}
+    }
 
     }
 }
