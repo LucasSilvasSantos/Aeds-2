@@ -8,10 +8,6 @@ Repositório pessoal de exercícios, implementações e trabalhos da disciplina 
 - [Sobre a disciplina](#sobre-a-disciplina)
 - [Conteúdo deste repositório](#conteúdo-deste-repositório)
 - [Linguagens e composição do repositório](#linguagens-e-composição-do-repositório)
-- [Pré-requisitos](#pré-requisitos)
-- [Como compilar e executar](#como-compilar-e-executar)
-  - [Java](#java)
-  - [C](#c)
 - [Contato](#contato)
 - [Notas finais](#notas-finais)
 
