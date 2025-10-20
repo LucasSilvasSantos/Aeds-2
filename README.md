@@ -1,6 +1,6 @@
 # AEDS-2 (Algoritmos e Estruturas de Dados 2)
 
-Repositório pessoal de exercícios, implementações e trabalhos da disciplina Algoritmos e Estruturas de Dados 2 (AEDS-2),  por LucasSilvasSantos.
+Repositório pessoal de exercícios, implementações e trabalhos da disciplina Algoritmos e Estruturas de Dados 2 (AEDS-2).
 
 > Este repositório contém soluções em Java e C para problemas e atividades da disciplina. O objetivo é servir como registro das aulas, apoio para estudo e material para consultas futuras.
 
