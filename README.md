@@ -35,7 +35,7 @@ A maior parte do código didático e projetos está em Java, com exercícios e i
 
 
 ## Contato
-Autor: LucasSilvasSantos  
+Autor: Lucas Silva Santos  
 GitHub: https://github.com/LucasSilvasSantos
 
 ## Notas finais
