@@ -43,6 +43,16 @@ class Pilha {
         return -1;
     }
 
+     public int soma (){
+        int soma =0;
+        for (Celula i =topo; i != null; i =i.prox){
+            soma+=i.elemento;
+                
+        }
+  return soma;
+
+    }
+
     public void mostrar() {
         System.out.print("[");
         for (Celula i = topo; i != null; i = i.prox) {
@@ -67,5 +77,6 @@ public class PilhaCompleta {
         }
         System.out.println(" elementos da pilha : ");
         pilha.mostrar();
+        System.out.println(" soma dos elementos da pilha : " + pilha.soma());
     }
 }
