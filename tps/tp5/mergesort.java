@@ -39,94 +39,89 @@ public class mergesort {
         // Fecha o arquivo após terminar a leitura
         br.close();
 
-        // Converte a lista dinâmica em array estático (necessário para mergesort)
-        Game[] arr = lista.toArray(new Game[0]);
+        // --- DETECÇÃO RÁPIDA DE DUPLICATAS (opcional, para debug) ---
+        Map<Integer,Integer> counts = new HashMap<>();
+        for (Game g : lista) counts.put(g.id, counts.getOrDefault(g.id, 0) + 1);
+        // Imprime IDs com mais de uma ocorrência
+        for (Map.Entry<Integer,Integer> e : counts.entrySet()) {
+            if (e.getValue() > 1) System.err.println("Duplicado AppID=" + e.getKey() + " vezes=" + e.getValue());
+        }
 
-        // Marca o tempo inicial (em nanossegundos) para medir performance
+        // --- REMOVER DUPLICATAS: mantém a primeira ocorrência de cada AppID ---
+        Map<Integer, Game> uniq = new LinkedHashMap<>();
+        for (Game g : lista) {
+            if (!uniq.containsKey(g.id)) uniq.put(g.id, g);
+        }
+
+        // Converte a lista sem duplicatas em array estático (necessário para buscas/ordenações)
+        Game[] arr = uniq.values().toArray(new Game[0]);
+
+        // --- PREPARA ARRAY ORDENADO POR ID PARA BUSCA BINÁRIA ---
+        Game[] arrById = Arrays.copyOf(arr, arr.length);
+        Arrays.sort(arrById, new Comparator<Game>() {
+            @Override public int compare(Game a, Game b) { return Integer.compare(a.id, b.id); }
+        });
+
+        // Lê IDs da entrada padrão (uma por linha) até "FIM" e usa busca binária para localizar
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+        List<Game> pesquisaList = new ArrayList<>();
+        String lineIn;
+        while ((lineIn = stdin.readLine()) != null) {
+            lineIn = lineIn.trim();
+            if (lineIn.equals("FIM")) break;
+            if (lineIn.isEmpty()) continue;
+            try {
+                int idBusca = Integer.parseInt(lineIn);
+                int idx = binarySearchById(arrById, idBusca);
+                if (idx >= 0) {
+                    pesquisaList.add(arrById[idx]);
+                }
+            } catch (NumberFormatException ex) {
+                // ignora linhas inválidas
+            }
+        }
+
+        // Converte lista de pesquisa para array (será ordenado por preço com seu mergesort)
+        Game[] pesquisaArr = pesquisaList.toArray(new Game[0]);
+
+        // Marca o tempo inicial, ordena usando mergesort (por preço então id) e marca o tempo final
         long t0 = System.nanoTime();
-        
-        // Executa o algoritmo Mergesort no array
-        mergeSort(arr);
-        
-        // Marca o tempo final
+        if (pesquisaArr.length > 1) mergeSort(pesquisaArr);
         long t1 = System.nanoTime();
-        
-        // Calcula o tempo total de execução
         long tempoNano = t1 - t0;
 
-        // === IMPRESSÃO DOS 5 MAIS CAROS ===
+        // === IMPRESSÃO DOS 5 MAIS CAROS (da lista de pesquisa) ===
         System.out.println("| 5 precos mais caros |");
-        
-        // Lista para armazenar os 5 jogos mais caros
         List<Game> topCaros = new ArrayList<>();
-        
-        // Set para rastrear quais jogos já foram adicionados (evita repetir o mesmo jogo)
         Set<Integer> usedIds = new HashSet<>();
-        
-        // Percorre o array de trás para frente (do maior preço para o menor)
-        for (int i = arr.length - 1; i >= 0 && topCaros.size() < 5; i--) {
-            // Pega o preço do jogo na posição atual
-            float currentPrice = arr[i].price;
-            
-            // Se este jogo já foi usado, pula para o próximo
-            if (usedIds.contains(arr[i].id)) continue;
-            
-            // Encontra o índice do primeiro jogo com este preço (menor AppID)
+        for (int i = pesquisaArr.length - 1; i >= 0 && topCaros.size() < 5; i--) {
+            float currentPrice = pesquisaArr[i].price;
+            if (usedIds.contains(pesquisaArr[i].id)) continue;
             int firstIdx = i;
-            // Retrocede no array enquanto houver jogos com o mesmo preço
-            while (firstIdx > 0 && Float.compare(arr[firstIdx - 1].price, currentPrice) == 0) {
-                firstIdx--;  // Volta uma posição
-            }
-            
-            // Adiciona o jogo com menor AppID deste preço
-            topCaros.add(arr[firstIdx]);
-            
-            // Marca este jogo como já usado
-            usedIds.add(arr[firstIdx].id);
+            while (firstIdx > 0 && Float.compare(pesquisaArr[firstIdx - 1].price, currentPrice) == 0) firstIdx--;
+            topCaros.add(pesquisaArr[firstIdx]);
+            usedIds.add(pesquisaArr[firstIdx].id);
         }
-        
-        // Imprime cada um dos 5 jogos mais caros
         for (Game g : topCaros) System.out.println(g);
-        
-        // Linha em branco para separar as seções
         System.out.println();
-        
-        // === IMPRESSÃO DOS 5 MAIS BARATOS ===
+
+        // === IMPRESSÃO DOS 5 MAIS BARATOS (da lista de pesquisa) ===
         System.out.println("| 5 precos mais baratos |");
-        
-        // Limpa o Set de jogos usados para reutilizar
         usedIds.clear();
-        
-        // Contador de jogos impressos
         int count = 0;
-        
-        // Percorre do início do array (menores preços)
-        for (int i = 0; i < arr.length && count < 5; i++) {
-            // Pega o preço do jogo atual
-            float currentPrice = arr[i].price;
-            
-            // Se este jogo já foi usado, pula
-            if (usedIds.contains(arr[i].id)) continue;
-            
-            // Imprime o jogo (já é o de menor AppID porque array está ordenado)
-            System.out.println(arr[i]);
-            
-            // Marca este jogo como usado
-            usedIds.add(arr[i].id);
-            
-            // Incrementa o contador
+        for (int i = 0; i < pesquisaArr.length && count < 5; i++) {
+            if (usedIds.contains(pesquisaArr[i].id)) continue;
+            System.out.println(pesquisaArr[i]);
+            usedIds.add(pesquisaArr[i].id);
             count++;
         }
 
         // === GERAÇÃO DO ARQUIVO DE LOG ===
-        // Nome do arquivo de log contendo a matrícula
         String logName = MATRICULA + "_mergesort.txt";
-        
-        // Cria e escreve no arquivo de log (try-with-resources fecha automaticamente)
         try (PrintWriter pw = new PrintWriter(new FileWriter(logName))) {
-            // Formato: matrícula numComparações numMovimentos tempoNano
             pw.printf("%s %d %d %d\n", MATRICULA, comparisons, movements, tempoNano);
         }
+
     }
 
     // === MÉTODO PRINCIPAL DO MERGESORT ===
@@ -512,6 +507,18 @@ public class mergesort {
         // Fecha o colchete e retorna
         result += "]";
         return result;
+    }
+
+    // --- método auxiliar de busca binária por id ---
+    private static int binarySearchById(Game[] a, int id) {
+        int l = 0, r = a.length - 1;
+        while (l <= r) {
+            int m = (l + r) >>> 1;
+            if (a[m].id == id) return m;
+            if (a[m].id < id) l = m + 1;
+            else r = m - 1;
+        }
+        return -1;
     }
 }
 
