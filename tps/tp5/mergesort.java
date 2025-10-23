@@ -1,277 +1,201 @@
-import java.io.*;      // Importa classes para leitura/escrita de arquivos
-import java.util.*;    // Importa classes utilitárias (List, ArrayList, Set, etc.)
+import java.io.*;      
+import java.util.*;    
 
 public class mergesort {
 
-    // Matrícula do aluno - será usada no nome do arquivo de log
+    // [0] Constantes e contadores
+    // - MATRICULA: identificação para o arquivo de log
+    // - comparações / movements: contadores usados para relatório do algoritmo
     private static final String MATRICULA = "891378";
+    private static long comparações = 0;  
+    private static long movements = 0;     
 
-    // Contadores globais para estatísticas do algoritmo
-    private static long comparisons = 0;  // Conta número de comparações feitas
-    private static long movements = 0;     // Conta número de movimentações de elementos
-
+    // [1] main()
+    // - fluxo principal: lê CSV, cria objetos Game, remove duplicatas,
+    //   prepara array ordenado por ID, lê IDs da entrada, monta vetor de pesquisa,
+    //   ordena por preço (mergeSort), imprime top5 (caros/baratos) e escreve log.
     public static void main(String[] args) throws Exception {
-        // Abre o arquivo CSV para leitura
-        // O arquivo está em /tmp/games.csv (padrão do ambiente de correção)
+        // [1.1] Leitura do CSV
+        // - Abre /tmp/games.csv com BufferedReader
+        // - Para cada linha: CsvParser.parseLine -> Game.fromCsvFields -> adiciona em lista
         BufferedReader br = new BufferedReader(new FileReader("/tmp/games.csv"));
-        
-        // Lê e descarta a primeira linha (cabeçalho do CSV)
         String header = br.readLine(); 
-        
-        // Cria uma lista dinâmica para armazenar os jogos lidos
         List<Game> lista = new ArrayList<>();
-        
-        // Variável para armazenar cada linha lida do arquivo
         String linha;
-        
-        // Loop que lê todas as linhas do arquivo até o final
         while ((linha = br.readLine()) != null) {
-            // Faz o parse da linha CSV, separando os campos
             List<String> fields = CsvParser.parseLine(linha);
-            
-            // Ignora linhas com menos de 14 campos (dados incompletos)
             if (fields.size() < 14) continue;
-            
-            // Converte os campos em um objeto Game e adiciona na lista
             lista.add(Game.fromCsvFields(fields));
         }
-        
-        // Fecha o arquivo após terminar a leitura
         br.close();
 
-        // --- DETECÇÃO RÁPIDA DE DUPLICATAS (opcional, para debug) ---
+        // [1.2] Detecção rápida de duplicatas (por id)
+        // - conta ocorrências com HashMap para DEBUG (imprime em System.err)
         Map<Integer,Integer> counts = new HashMap<>();
         for (Game g : lista) counts.put(g.id, counts.getOrDefault(g.id, 0) + 1);
-        // Imprime IDs com mais de uma ocorrência
         for (Map.Entry<Integer,Integer> e : counts.entrySet()) {
             if (e.getValue() > 1) System.err.println("Duplicado AppID=" + e.getKey() + " vezes=" + e.getValue());
         }
 
-        // --- REMOVER DUPLICATAS: mantém a primeira ocorrência de cada AppID ---
+        // [1.3] Remover duplicatas mantendo primeira ocorrência
+        // - LinkedHashMap preserva ordem de inserção; transforma em array arr
         Map<Integer, Game> uniq = new LinkedHashMap<>();
         for (Game g : lista) {
             if (!uniq.containsKey(g.id)) uniq.put(g.id, g);
         }
-
-        // Converte a lista sem duplicatas em array estático (necessário para buscas/ordenações)
         Game[] arr = uniq.values().toArray(new Game[0]);
 
-        // --- PREPARA ARRAY ORDENADO POR ID PARA BUSCA BINÁRIA ---
+        // [1.4] Preparar array ordenado por ID (para busca binária)
+        // - copia arr para arrById e usa Arrays.sort com Comparator por id
         Game[] arrById = Arrays.copyOf(arr, arr.length);
         Arrays.sort(arrById, new Comparator<Game>() {
             @Override public int compare(Game a, Game b) { return Integer.compare(a.id, b.id); }
         });
 
-        // Lê IDs da entrada padrão (uma por linha) até "FIM" e usa busca binária para localizar
-        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-        List<Game> pesquisaList = new ArrayList<>();
-        String lineIn;
-        while ((lineIn = stdin.readLine()) != null) {
-            lineIn = lineIn.trim();
-            if (lineIn.equals("FIM")) break;
-            if (lineIn.isEmpty()) continue;
+        // [1.5] Ler IDs da entrada padrão e montar vetor de pesquisa
+        // - usa Scanner(System.in) para ler linhas até "FIM"
+        // - converte cada linha em int e busca em arrById via binarySearchById
+        Scanner sc = new Scanner(System.in);
+        Game pesquisaTemp[] = new Game[100]; // OBS: tamanho fixo — considerar ArrayList
+        int pesquisaAux = 0;
+        while (sc.hasNextLine()) {
+            String buscaId = sc.nextLine().trim();
+            if (buscaId.equals("FIM")) break;
+            if (buscaId.isEmpty()) continue;
             try {
-                int idBusca = Integer.parseInt(lineIn);
+                int idBusca = Integer.parseInt(buscaId);
                 int idx = binarySearchById(arrById, idBusca);
-                if (idx >= 0) {
-                    pesquisaList.add(arrById[idx]);
-                }
-            } catch (NumberFormatException ex) {
-                // ignora linhas inválidas
-            }
+                if (idx >= 0) pesquisaTemp[pesquisaAux++] = arrById[idx];
+            } catch (NumberFormatException e) { /* ignora */ }
         }
+        sc.close();
 
-        // Converte lista de pesquisa para array (será ordenado por preço com seu mergesort)
-        Game[] pesquisaArr = pesquisaList.toArray(new Game[0]);
-
-        // Marca o tempo inicial, ordena usando mergesort (por preço então id) e marca o tempo final
+        // [1.6] Copiar pesquisados e ordenar por preço (mergeSort)
+        // - cria array pesquisa sem nulls; mede tempo com System.nanoTime()
+        Game[] pesquisa = Arrays.copyOf(pesquisaTemp, pesquisaAux);
         long t0 = System.nanoTime();
-        if (pesquisaArr.length > 1) mergeSort(pesquisaArr);
+        if (pesquisa.length > 1) mergeSort(pesquisa); // chamada para ordenar por price,id
         long t1 = System.nanoTime();
         long tempoNano = t1 - t0;
 
-        // === IMPRESSÃO DOS 5 MAIS CAROS (da lista de pesquisa) ===
-        System.out.println("| 5 precos mais caros |");
-        List<Game> topCaros = new ArrayList<>();
+        // [1.7] Impressão: 5 preços mais caros
+        // - varre do fim para o começo (array ordenado asc por preço)
+        // - pula IDs já impressos (usedIds) para evitar duplicatas
+        System.out.println("| 5 preços mais caros |");
         Set<Integer> usedIds = new HashSet<>();
-        for (int i = pesquisaArr.length - 1; i >= 0 && topCaros.size() < 5; i--) {
-            float currentPrice = pesquisaArr[i].price;
-            if (usedIds.contains(pesquisaArr[i].id)) continue;
-            int firstIdx = i;
-            while (firstIdx > 0 && Float.compare(pesquisaArr[firstIdx - 1].price, currentPrice) == 0) firstIdx--;
-            topCaros.add(pesquisaArr[firstIdx]);
-            usedIds.add(pesquisaArr[firstIdx].id);
+        int printed = 0;
+        for (int i = pesquisa.length - 1; i >= 0 && printed < 5; i--) {
+            Game g = pesquisa[i];
+            if (g == null) continue;
+            if (usedIds.contains(g.id)) continue;
+            System.out.println(g.toString());
+            usedIds.add(g.id);
+            printed++;
         }
-        for (Game g : topCaros) System.out.println(g);
         System.out.println();
 
-        // === IMPRESSÃO DOS 5 MAIS BARATOS (da lista de pesquisa) ===
-        System.out.println("| 5 precos mais baratos |");
+        // [1.8] Impressão: 5 preços mais baratos
+        // - varre do começo para o fim, mesma lógica de pular IDs duplicados
+        System.out.println("| 5 preços mais baratos |");
         usedIds.clear();
-        int count = 0;
-        for (int i = 0; i < pesquisaArr.length && count < 5; i++) {
-            if (usedIds.contains(pesquisaArr[i].id)) continue;
-            System.out.println(pesquisaArr[i]);
-            usedIds.add(pesquisaArr[i].id);
-            count++;
+        printed = 0;
+        for (int i = 0; i < pesquisa.length && printed < 5; i++) {
+            Game g = pesquisa[i];
+            if (g == null) continue;
+            if (usedIds.contains(g.id)) continue;
+            System.out.println(g.toString());
+            usedIds.add(g.id);
+            printed++;
         }
 
-        // === GERAÇÃO DO ARQUIVO DE LOG ===
+        // [1.9] Geração do arquivo de log
+        // - escreve MATRICULA, comparações, movements, tempoNano em arquivo
         String logName = MATRICULA + "_mergesort.txt";
         try (PrintWriter pw = new PrintWriter(new FileWriter(logName))) {
-            pw.printf("%s %d %d %d\n", MATRICULA, comparisons, movements, tempoNano);
+            pw.printf("%s %d %d %d\n", MATRICULA, comparações, movements, tempoNano);
         }
-
     }
 
-    // === MÉTODO PRINCIPAL DO MERGESORT ===
-    // Ponto de entrada para ordenar o array
+    // [2] mergeSort (entrada)
+    // - cria array auxiliar e chama mergesort recursivo
     private static void mergeSort(Game[] a) {
-        // Se array for nulo ou ter menos de 2 elementos, já está ordenado
         if (a == null || a.length < 2) return;
-        
-        // Cria array auxiliar do mesmo tamanho (usado no merge)
         Game[] aux = new Game[a.length];
-        
-        // Chama a função recursiva passando limites inicial e final
         mergesort(a, aux, 0, a.length - 1);
     }
 
-    // === FUNÇÃO RECURSIVA DO MERGESORT ===
-    // Divide o array em metades e ordena recursivamente
+    // [3] mergesort (recursivo)
+    // - divide recursivamente o array em metades
     private static void mergesort(Game[] a, Game[] aux, int left, int right) {
-        // Caso base: se left >= right, subarray tem 0 ou 1 elemento (já ordenado)
         if (left >= right) return;
-        
-        // Calcula o índice do meio
         int mid = (left + right) / 2;
-        
-        // Ordena recursivamente a metade esquerda
         mergesort(a, aux, left, mid);
-        
-        // Ordena recursivamente a metade direita
         mergesort(a, aux, mid + 1, right);
-        
-        // Mescla as duas metades ordenadas
         merge(a, aux, left, mid, right);
     }
 
-    // === FUNÇÃO DE MESCLAGEM (MERGE) ===
-    // Combina duas metades ordenadas em uma única sequência ordenada
+    // [4] merge (mesclagem)
+    // - copia intervalo para aux e mescla comparando com compareAux
+    // - atualiza contadores (comparações / movements)
     private static void merge(Game[] a, Game[] aux, int left, int mid, int right) {
-        // Copia elementos do intervalo [left, right] para o array auxiliar
         for (int k = left; k <= right; k++) {
-            aux[k] = a[k];  // Copia elemento por elemento
+            aux[k] = a[k];
         }
-        
-        // i: índice da metade esquerda (começa em left)
         int i = left;
-        
-        // j: índice da metade direita (começa em mid+1)
         int j = mid + 1;
-        
-        // k: índice de inserção no array original
         int k = left;
-        
-        // Mescla enquanto houver elementos em ambas as metades
         while (i <= mid && j <= right) {
-            // Incrementa contador de comparações
-            comparisons++;
-            
-            // Se elemento da esquerda <= elemento da direita
+            comparisons++;                  // contador de comparações (atenção: nome da variável)
             if (compareAux(aux[i], aux[j]) <= 0) {
-                a[k++] = aux[i++];  // Copia da esquerda e avança ambos índices
-                movements++;         // Conta a movimentação
+                a[k++] = aux[i++];
+                movements++;
             } else {
-                a[k++] = aux[j++];  // Copia da direita e avança ambos índices
-                movements++;         // Conta a movimentação
+                a[k++] = aux[j++];
+                movements++;
             }
         }
-        
-        // Copia elementos restantes da metade esquerda (se houver)
-        while (i <= mid) {
-            a[k++] = aux[i++];  // Copia e avança
-            movements++;         // Conta a movimentação
-        }
-        
-        // Copia elementos restantes da metade direita (se houver)
-        while (j <= right) {
-            a[k++] = aux[j++];  // Copia e avança
-            movements++;         // Conta a movimentação
-        }
+        while (i <= mid) { a[k++] = aux[i++]; movements++; }
+        while (j <= right) { a[k++] = aux[j++]; movements++; }
     }
 
-    // === FUNÇÃO DE COMPARAÇÃO ===
-    // Compara dois jogos: primeiro por preço, depois por AppID (desempate)
-    // Retorna: -1 se x < y, 0 se x == y, 1 se x > y
+    // [5] compareAux
+    // - ordena por price (float) asc; em empate desempata por id asc
+    // - usar este comparator + imprimir do fim p/ começo resulta em price desc, id desc
     private static int compareAux(Game x, Game y) {
-        // Compara preços
-        if (Float.compare(x.price, y.price) < 0) return -1;  // x mais barato
-        if (Float.compare(x.price, y.price) > 0) return 1;   // x mais caro
-        
-        // Preços são iguais, desempata por AppID (ordem crescente)
-        if (x.id < y.id) return -1;  // x tem ID menor
-        if (x.id > y.id) return 1;   // x tem ID maior
-        return 0;  // IDs iguais (empate total)
+        if (Float.compare(x.price, y.price) < 0) return -1;
+        if (Float.compare(x.price, y.price) > 0) return 1;
+        if (x.id < y.id) return -1;
+        if (x.id > y.id) return 1;
+        return 0;
     }
 
-    // ========== CLASSES AUXILIARES ==========
-    
-    // === PARSER DE CSV ===
-    // Classe responsável por fazer parse correto de linhas CSV
-    // Trata aspas duplas, vírgulas dentro de campos, etc.
+    // [6] CsvParser.parseLine
+    // - parser CSV que trata aspas duplas e vírgulas dentro de campos
+    // - retorna List<String> com os campos da linha
     public static class CsvParser {
-        
-        // Converte uma linha CSV em lista de campos (strings)
         public static List<String> parseLine(String line) {
-            // Lista que armazenará os campos extraídos
             List<String> out = new ArrayList<>();
-            
-            // Se linha for nula, retorna lista vazia
             if (line == null) return out;
-            
-            // StringBuilder para construir o campo atual
             StringBuilder cur = new StringBuilder();
-            
-            // Flag que indica se estamos dentro de aspas
             boolean inQuotes = false;
-            
-            // Percorre cada caractere da linha
             for (int i = 0; i < line.length(); i++) {
-                char c = line.charAt(i);  // Pega o caractere atual
-                
-                // Trata aspas duplas
+                char c = line.charAt(i);
                 if (c == '"') {
-                    // Se estamos dentro de aspas E o próximo char também é ", é escape ("")
                     if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
-                        cur.append('"');  // Adiciona uma aspa ao campo
-                        i++;              // Pula o próximo caractere
-                    } else {
-                        // Alterna o estado (abre/fecha aspas)
-                        inQuotes = !inQuotes;
-                    }
-                }
-                // Trata vírgula (separador de campos) somente se fora de aspas
-                else if (c == ',' && !inQuotes) {
-                    out.add(cur.toString());  // Adiciona campo completo à lista
-                    cur.setLength(0);         // Limpa o buffer para o próximo campo
-                }
-                // Qualquer outro caractere: adiciona ao campo atual
-                else {
-                    cur.append(c);
-                }
+                        cur.append('"'); i++;
+                    } else { inQuotes = !inQuotes; }
+                } else if (c == ',' && !inQuotes) {
+                    out.add(cur.toString()); cur.setLength(0);
+                } else { cur.append(c); }
             }
-            
-            // Adiciona o último campo (após a última vírgula)
             out.add(cur.toString());
-            
-            // Retorna lista com todos os campos
             return out;
         }
     }
 
-    // === CLASSE GAME ===
-    // Representa um jogo com todos os seus atributos
+    // [7] Classe Game e helpers
+    // - modelo que representa os campos do CSV
+    // - métodos estáticos auxiliares (fromCsvFields, parsePrice, normalizeDate, etc.)
     public static class Game {
         public int id;
         public String name;
@@ -288,6 +212,7 @@ public class mergesort {
         public List<String> genres = new ArrayList<>();
         public List<String> tags = new ArrayList<>();
 
+        // fromCsvFields: instancia Game a partir de uma lista de campos CSV
         public static Game fromCsvFields(List<String> f) {
             Game g = new Game();
             g.id = parseIntDefault(get(f,0), 0);
@@ -307,33 +232,28 @@ public class mergesort {
             return g;
         }
 
+        // --- helpers de parsing e normalização (resumido) ---
         private static String get(List<String> f, int idx) {
             if (idx >= f.size()) return "";
             return f.get(idx) == null ? "" : f.get(idx).trim();
         }
-
         private static String unquote(String s) {
             if (s == null) return "";
             s = s.trim();
-            if (s.length() >= 2 && s.startsWith("\"") && s.endsWith("\"")) {
-                s = s.substring(1, s.length()-1);
-            }
+            if (s.length() >= 2 && s.startsWith("\"") && s.endsWith("\"")) s = s.substring(1, s.length()-1);
             return s;
         }
-
         private static String cleanNumber(String s) {
             if (s == null) return "";
             s = unquote(s).trim();
             return s.replaceAll("[^0-9]", "");
         }
-
         private static int parseIntDefault(String s, int def) {
             if (s == null) return def;
             s = s.trim();
             if (s.isEmpty()) return def;
             try { return Integer.parseInt(s); } catch (Exception e) { return def; }
         }
-
         private static int parseIntOrDefault(String s, int def) {
             s = unquote(s).trim();
             if (s.isEmpty()) return def;
@@ -341,7 +261,6 @@ public class mergesort {
             if (s.isEmpty()) return def;
             try { return Integer.parseInt(s); } catch (Exception e) { return def; }
         }
-
         private static float parseUserScore(String s) {
             s = unquote(s).trim().toLowerCase();
             if (s.isEmpty() || s.equals("tbd")) return -1.0f;
@@ -351,7 +270,6 @@ public class mergesort {
             if (s.isEmpty()) return -1.0f;
             try { return Float.parseFloat(s); } catch (Exception e) { return -1.0f; }
         }
-
         private static float parsePrice(String s) {
             s = unquote(s).trim();
             if (s.isEmpty()) return 0.0f;
@@ -361,37 +279,28 @@ public class mergesort {
             if (cleaned.isEmpty()) return 0.0f;
             try { return Float.parseFloat(cleaned); } catch (Exception e) { return 0.0f; }
         }
-
         private static List<String> parseList(String s, boolean preserveSingleQuotes) {
             s = unquote(s).trim();
             List<String> out = new ArrayList<>();
             if (s.isEmpty()) return out;
-            if (s.startsWith("[") && s.endsWith("]") && s.length() >= 2) {
-                s = s.substring(1, s.length()-1);
-            }
+            if (s.startsWith("[") && s.endsWith("]") && s.length() >= 2) s = s.substring(1, s.length()-1);
             StringBuilder cur = new StringBuilder();
             boolean inSingle = false;
             for (int i = 0; i < s.length(); i++) {
                 char c = s.charAt(i);
-                if (c == '\'') {
-                    inSingle = !inSingle;
-                    continue;
-                }
+                if (c == '\'') { inSingle = !inSingle; continue; }
                 if (c == ',' && !inSingle) {
                     String item = cur.toString().trim();
                     item = stripQuotes(item);
                     if (!item.isEmpty()) out.add(item);
                     cur.setLength(0);
-                } else {
-                    cur.append(c);
-                }
+                } else { cur.append(c); }
             }
             String last = cur.toString().trim();
             last = stripQuotes(last);
             if (!last.isEmpty()) out.add(last);
             return out;
         }
-
         private static String stripQuotes(String s) {
             if (s == null) return "";
             s = s.trim();
@@ -400,6 +309,7 @@ public class mergesort {
             return s.trim();
         }
 
+        // normalizeDate: tenta vários formatos e faz fallback por regex
         private static String normalizeDate(String raw) {
             raw = unquote(raw).trim();
             if (raw.isEmpty()) return "";
@@ -422,7 +332,6 @@ public class mergesort {
                     }
                 } catch (Exception ex) {}
             }
-
             Map<String,Integer> meses = new HashMap<>();
             meses.put("jan",1); meses.put("january",1);
             meses.put("feb",2); meses.put("february",2);
@@ -436,81 +345,63 @@ public class mergesort {
             meses.put("oct",10); meses.put("october",10);
             meses.put("nov",11); meses.put("november",11);
             meses.put("dec",12); meses.put("december",12);
-
             String low = raw.toLowerCase();
             int year = -1, month = 1, day = 1;
-
             java.util.regex.Matcher my = java.util.regex.Pattern.compile("(\\d{4})").matcher(raw);
             if (my.find()) year = Integer.parseInt(my.group(1));
-
             for (String k : meses.keySet()) {
                 if (low.contains(k)) { month = meses.get(k); break; }
             }
-
             java.util.regex.Matcher md = java.util.regex.Pattern.compile("\\b(\\d{1,2})\\b").matcher(raw);
             while (md.find()) {
                 int v = Integer.parseInt(md.group(1));
                 if (v == year) continue;
                 if (v >= 1 && v <= 31) { day = v; break; }
             }
-
-            // Se não encontrou ano válido, retorna string original
             if (year == -1) return raw;
-            
-            // Retorna data formatada como dd/MM/yyyy
             return String.format("%02d/%02d/%04d", day, month, year);
         }
 
-        // Sobrescreve toString para formatar saída do jogo
         @Override
         public String toString() { return mergesort.gameToString(this); }
     }
 
-    // === MÉTODO DE FORMATAÇÃO DE SAÍDA ===
-    // Converte um objeto Game para string no formato especificado
+    // [8] gameToString
+    // - monta a string de saída no formato requerido
     public static String gameToString(Game g) {
-        return "=> " + g.id + " ## " +                               // AppID
-            g.name + " ## " +                                        // Nome do jogo
-            g.releaseDate + " ## " +                                 // Data de lançamento
-            g.estimatedOwners + " ## " +                             // Número estimado de donos
-            g.price + " ## " +                                       // Preço
-            auxiliarMostrar(g.supportedLanguages) + " ## " +         // Idiomas suportados
-            g.metacriticScore + " ## " +                             // Nota Metacritic
-            g.userScore + " ## " +                                   // Nota dos usuários
-            g.achievements + " ## " +                                // Número de conquistas
-            auxiliarMostrar(g.publishers) + " ## " +                 // Publicadores
-            auxiliarMostrar(g.developers) + " ## " +                 // Desenvolvedores
-            auxiliarMostrar(g.categories) + " ## " +                 // Categorias
-            auxiliarMostrar(g.genres) + " ## " +                     // Gêneros
-            auxiliarMostrar(g.tags) + " ##";                         // Tags
+        return "=> " + g.id + " ## " +
+            g.name + " ## " +
+            g.releaseDate + " ## " +
+            g.estimatedOwners + " ## " +
+            g.price + " ## " +
+            auxiliarMostrar(g.supportedLanguages) + " ## " +
+            g.metacriticScore + " ## " +
+            g.userScore + " ## " +
+            g.achievements + " ## " +
+            auxiliarMostrar(g.publishers) + " ## " +
+            auxiliarMostrar(g.developers) + " ## " +
+            auxiliarMostrar(g.categories) + " ## " +
+            auxiliarMostrar(g.genres) + " ## " +
+            auxiliarMostrar(g.tags) + " ##";
     }
 
-    // === MÉTODO AUXILIAR PARA FORMATAR LISTAS ===
-    // Converte uma lista de strings para o formato [item1, item2, item3]
+    // [9] auxiliarMostrar
+    // - formata listas como "[a, b, c]"
     private static String auxiliarMostrar(List<String> array) {
-        // Inicia a string com colchete de abertura
         String result = "[";
-        
-        // Se a lista não for nula, percorre todos os elementos
         if (array != null) {
             for (int i = 0; i < array.size(); i++) {
-                // Adiciona o item atual
                 result += array.get(i);
-                
-                // Se não for o último item, adiciona vírgula e espaço
-                if (i < array.size() - 1) {
-                    result += ", ";
-                }
+                if (i < array.size() - 1) result += ", ";
             }
         }
-        
-        // Fecha o colchete e retorna
         result += "]";
         return result;
     }
 
-    // --- método auxiliar de busca binária por id ---
-    private static int binarySearchById(Game[] a, int id) {
+    // [10] binarySearchById
+    // - busca binária em arr ordenado por id
+    private static int buscabinordid(Game[] a, int id) {
         int l = 0, r = a.length - 1;
         while (l <= r) {
             int m = (l + r) >>> 1;
