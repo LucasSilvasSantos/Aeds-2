@@ -60,16 +60,16 @@ public class mergesort {
         // Lista para armazenar os 5 jogos mais caros
         List<Game> topCaros = new ArrayList<>();
         
-        // Set para rastrear quais preços já foram adicionados (evita duplicatas de preço)
-       
+        // Set para rastrear quais jogos já foram adicionados (evita repetir o mesmo jogo)
+        Set<Integer> usedIds = new HashSet<>();
         
         // Percorre o array de trás para frente (do maior preço para o menor)
         for (int i = arr.length - 1; i >= 0 && topCaros.size() < 5; i--) {
             // Pega o preço do jogo na posição atual
             float currentPrice = arr[i].price;
             
-            
-            
+            // Se este jogo já foi usado, pula para o próximo
+            if (usedIds.contains(arr[i].id)) continue;
             
             // Encontra o índice do primeiro jogo com este preço (menor AppID)
             int firstIdx = i;
@@ -81,7 +81,8 @@ public class mergesort {
             // Adiciona o jogo com menor AppID deste preço
             topCaros.add(arr[firstIdx]);
             
-           
+            // Marca este jogo como já usado
+            usedIds.add(arr[firstIdx].id);
         }
         
         // Imprime cada um dos 5 jogos mais caros
@@ -93,7 +94,8 @@ public class mergesort {
         // === IMPRESSÃO DOS 5 MAIS BARATOS ===
         System.out.println("| 5 precos mais baratos |");
         
-        
+        // Limpa o Set de jogos usados para reutilizar
+        usedIds.clear();
         
         // Contador de jogos impressos
         int count = 0;
@@ -103,11 +105,15 @@ public class mergesort {
             // Pega o preço do jogo atual
             float currentPrice = arr[i].price;
             
-        
+            // Se este jogo já foi usado, pula
+            if (usedIds.contains(arr[i].id)) continue;
+            
             // Imprime o jogo (já é o de menor AppID porque array está ordenado)
             System.out.println(arr[i]);
             
-           
+            // Marca este jogo como usado
+            usedIds.add(arr[i].id);
+            
             // Incrementa o contador
             count++;
         }
