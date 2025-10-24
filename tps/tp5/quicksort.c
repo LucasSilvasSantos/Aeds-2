@@ -8,8 +8,8 @@
 #define MAX_LINE_SIZE 4096
 #define MAX_FIELD_SIZE 1024
 #define MAX_GAMES 5000
+#define MAX_SELECTED 200
 
-// SUBSTITUA pela sua matrícula
 #define MATRICULA "891378"
 
 // Contadores globais
@@ -166,65 +166,99 @@ int parseInt(const char* s) {
     return resultado;
 }
 
-// Converte string para float
+// Converte string para float (aceita ',' como separador decimal)
 float parseFloat(const char* s) {
-    float resultado = 0.0f;
-    bool ponto = false;
-    float divisor = 10.0f;
-
-    for (int i = 0; s[i] != '\0'; i++) {
+    if (!s) return 0.0f;
+    char buf[MAX_FIELD_SIZE];
+    int bi = 0;
+    // copia apenas dígitos, sinal, '.' e ',' e '-' (se houver)
+    for (int i = 0; s[i] != '\0' && bi < (int)sizeof(buf)-1; i++) {
         char c = s[i];
-        if (isdigit((unsigned char)c)) {
-            int digito = c - '0';
-            if (!ponto) resultado = resultado * 10 + digito;
-            else {
-                resultado = resultado + digito / divisor;
-                divisor *= 10;
-            }
-        } else if (c == '.') ponto = true;
+        if ((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-' ) buf[bi++] = c;
     }
-    return resultado;
+    buf[bi] = '\0';
+    // troca vírgula por ponto
+    for (int i = 0; buf[i] != '\0'; i++) if (buf[i] == ',') buf[i] = '.';
+    // usar atof (permitido) para converter
+    return (float)atof(buf);
 }
 
-// Formata data de "MMM d, yyyy" para "dd/MM/yyyy"
+// Formata data em vários formatos para "dd/MM/yyyy"
 void formatarData(char* dest, const char* data) {
-    char temp_data[100];
-    strncpy(temp_data, data, sizeof(temp_data) - 1);
-    temp_data[sizeof(temp_data) - 1] = '\0';
-    
-    // Remove aspas se existirem
-    if (temp_data[0] == '"') {
-        memmove(temp_data, temp_data + 1, strlen(temp_data));
-        temp_data[strlen(temp_data) - 1] = '\0';
+    if (!data || data[0] == '\0') { strcpy(dest, "01/01/0000"); return; }
+
+    char s[256];
+    strncpy(s, data, sizeof(s)-1);
+    s[sizeof(s)-1] = '\0';
+
+    // trim início/fim
+    int start = 0, end = (int)strlen(s) - 1;
+    while (s[start] && isspace((unsigned char)s[start])) start++;
+    while (end >= start && isspace((unsigned char)s[end])) s[end--] = '\0';
+
+    // remove aspas externas se existirem (somente se ambos existirem)
+    if (s[start] == '"' && s[end] == '"') {
+        start++; s[end] = '\0';
     }
 
-    // Parse da data
-    char* mes_str = strtok(temp_data, " ,");
-    char* dia_str = strtok(NULL, " ,");
-    char* ano_str = strtok(NULL, " ,");
+    // trabalhar sobre substring s+start
+    char *p = s + start;
 
-    if (!mes_str || !dia_str || !ano_str) {
-        strcpy(dest, "01/01/0000");
-        return;
+    // 1) já está em dd/MM/yyyy ou d/M/yyyy
+    {
+        int d,m,y;
+        if (sscanf(p, "%d/%d/%d", &d, &m, &y) == 3) {
+            sprintf(dest, "%02d/%02d/%04d", d, m, y);
+            return;
+        }
     }
-    
-    // Converte mês de string para número
-    char numeroMes[3];
-    if (strcmp(mes_str, "Jan") == 0) strcpy(numeroMes, "01");
-    else if (strcmp(mes_str, "Feb") == 0) strcpy(numeroMes, "02");
-    else if (strcmp(mes_str, "Mar") == 0) strcpy(numeroMes, "03");
-    else if (strcmp(mes_str, "Apr") == 0) strcpy(numeroMes, "04");
-    else if (strcmp(mes_str, "May") == 0) strcpy(numeroMes, "05");
-    else if (strcmp(mes_str, "Jun") == 0) strcpy(numeroMes, "06");
-    else if (strcmp(mes_str, "Jul") == 0) strcpy(numeroMes, "07");
-    else if (strcmp(mes_str, "Aug") == 0) strcpy(numeroMes, "08");
-    else if (strcmp(mes_str, "Sep") == 0) strcpy(numeroMes, "09");
-    else if (strcmp(mes_str, "Oct") == 0) strcpy(numeroMes, "10");
-    else if (strcmp(mes_str, "Nov") == 0) strcpy(numeroMes, "11");
-    else if (strcmp(mes_str, "Dec") == 0) strcpy(numeroMes, "12");
-    else strcpy(numeroMes, "01");
+    // 2) formato yyyy-mm-dd
+    {
+        int y,m,d;
+        if (sscanf(p, "%d-%d-%d", &y, &m, &d) == 3) {
+            sprintf(dest, "%02d/%02d/%04d", d, m, y);
+            return;
+        }
+    }
+    // 3) formatos com mês por nome: "MMM d, yyyy" ou "MMMM d, yyyy" ou "d MMM yyyy"
+    {
+        char mon[32];
+        int d,y;
+        // ex: "Oct 10, 2010"  -> mon d, y
+        if (sscanf(p, "%31s %d, %d", mon, &d, &y) == 3) {
+            // mon pode ser "Oct" ou "October" possivelmente com vírgula/ponct
+        } else if (sscanf(p, "%d %31s %d", &d, mon, &y) == 3) {
+            // ex: "10 Oct 2010"
+        } else {
+            mon[0] = '\0';
+            y = -1;
+        }
+        if (mon[0] != '\0' && y > 0) {
+            // normaliza mon para lowercase 3 letras
+            char mlow[4] = {'\0','\0','\0','\0'};
+            int i;
+            for (i = 0; i < 3 && mon[i]; i++) mlow[i] = (char)tolower((unsigned char)mon[i]);
+            mlow[i] = '\0';
+            int mm = 1;
+            if (strcmp(mlow, "jan") == 0) mm = 1;
+            else if (strcmp(mlow, "feb") == 0) mm = 2;
+            else if (strcmp(mlow, "mar") == 0) mm = 3;
+            else if (strcmp(mlow, "apr") == 0) mm = 4;
+            else if (strcmp(mlow, "may") == 0) mm = 5;
+            else if (strcmp(mlow, "jun") == 0) mm = 6;
+            else if (strcmp(mlow, "jul") == 0) mm = 7;
+            else if (strcmp(mlow, "aug") == 0) mm = 8;
+            else if (strcmp(mlow, "sep") == 0) mm = 9;
+            else if (strcmp(mlow, "oct") == 0) mm = 10;
+            else if (strcmp(mlow, "nov") == 0) mm = 11;
+            else if (strcmp(mlow, "dec") == 0) mm = 12;
+            sprintf(dest, "%02d/%02d/%04d", d, mm, y);
+            return;
+        }
+    }
 
-    sprintf(dest, "%02d/%s/%s", atoi(dia_str), numeroMes, ano_str);
+    // se nada bater, fallback seguro
+    strcpy(dest, "01/01/0000");
 }
 
 // Formata listas entre colchetes (ex: [item1, item2, item3])
@@ -383,22 +417,35 @@ void printGame(const Game* g) {
 
 // ========== FUNÇÃO PRINCIPAL ==========
 int main() {
-    // Abre arquivo CSV
-    FILE* file = fopen("/tmp/games.csv", "r");
-    if (!file) {
-        perror("Erro ao abrir /tmp/games.csv");
+    // Abre arquivo CSV: tenta vários caminhos e aceita CSV_PATH
+    FILE *arq = NULL;
+    const char *env_path = getenv("CSV_PATH");
+    const char *candidates[5] = {
+        "pubs/games.csv",
+        "./pubs/games.csv",
+        "/tmp/games.csv",
+        "games.csv",
+        env_path
+    };
+    for (int i = 0; i < 5; i++) {
+        if (candidates[i] == NULL) continue;
+        arq = fopen(candidates[i], "r");
+        if (arq != NULL) break;
+    }
+    if (!arq) {
+        fprintf(stderr, "Erro ao abrir o arquivo CSV. Verifique se o arquivo existe em pubs/, /tmp/ ou defina CSV_PATH.\n");
         return 1;
     }
 
     // Pula cabeçalho
     char linha[MAX_LINE_SIZE];
-    fgets(linha, sizeof(linha), file);
+    fgets(linha, sizeof(linha), arq);
 
-    // Lê todos os jogos do CSV
-    Game* games = (Game*)malloc(MAX_GAMES * sizeof(Game));
-    int numGames = 0;
+    // Lê TODOS os jogos do CSV primeiro
+    Game* allGames = (Game*)malloc(MAX_GAMES * sizeof(Game));
+    int totalGames = 0;
 
-    while (fgets(linha, sizeof(linha), file) != NULL && numGames < MAX_GAMES) {
+    while (fgets(linha, sizeof(linha), arq) != NULL && totalGames < MAX_GAMES) {
         char** campos = NULL;
         int num_campos = 0;
         splitManual(&campos, &num_campos, linha);
@@ -410,7 +457,7 @@ int main() {
         }
 
         // Preenche estrutura do jogo
-        Game* g = &games[numGames];
+        Game* g = &allGames[totalGames];
         memset(g, 0, sizeof(Game));
         
         g->id = parseInt(campos[0]);
@@ -439,20 +486,44 @@ int main() {
         for (int i = 0; i < num_campos; i++) free(campos[i]);
         free(campos);
         
-        numGames++;
+        totalGames++;
     }
-    fclose(file);
+    fclose(arq);
 
-    // Mede tempo de execução do Quicksort
+    // ========== NOVA LÓGICA: LÊ IDs DA ENTRADA E FILTRA JOGOS ==========
+    Game* selectedGames = (Game*)malloc(MAX_SELECTED * sizeof(Game));
+    int numSelected = 0;
+    
+    char inputId[50];
+    scanf("%s", inputId);
+    
+    while (strcmp(inputId, "FIM") != 0) {
+        int idBusca = atoi(inputId);
+        
+        // Busca o jogo com este ID
+        for (int i = 0; i < totalGames; i++) {
+            if (allGames[i].id == idBusca) {
+                // Copia o jogo para o array de selecionados
+                selectedGames[numSelected++] = allGames[i];
+                break; // Para de buscar após encontrar
+            }
+        }
+        
+        scanf("%s", inputId);
+    }
+
+    // Ordena APENAS os jogos selecionados
     clock_t inicio = clock();
-    quickSort(games, 0, numGames - 1);
+    if (numSelected > 0) {
+        quickSort(selectedGames, 0, numSelected - 1);
+    }
     clock_t fim = clock();
     
-    double tempoExecucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC * 1000.0; // em milissegundos
+    double tempoMs = ((double)(fim - inicio)) / CLOCKS_PER_SEC * 1000.0;
 
-    // Imprime jogos ordenados
-    for (int i = 0; i < numGames; i++) {
-        printGame(&games[i]);
+    // Imprime APENAS os jogos selecionados e ordenados
+    for (int i = 0; i < numSelected; i++) {
+        printGame(&selectedGames[i]);
     }
 
     // Grava arquivo de log
@@ -460,15 +531,16 @@ int main() {
     sprintf(logFilename, "%s_quicksort.txt", MATRICULA);
     FILE* logFile = fopen(logFilename, "w");
     if (logFile) {
-        fprintf(logFile, "%s\t%ld\t%ld\t%.2fms\n", MATRICULA, comparisons, movements, tempoExecucao);
+        fprintf(logFile, "%s\t%ld\t%ld\t%.2fms\n", MATRICULA, comparisons, movements, tempoMs);
         fclose(logFile);
     }
 
-    // Libera memória
-    for (int i = 0; i < numGames; i++) {
-        freeGameContents(&games[i]);
+    // Libera memória (os jogos selecionados compartilham ponteiros com allGames)
+    for (int i = 0; i < totalGames; i++) {
+        freeGameContents(&allGames[i]);
     }
-    free(games);
+    free(allGames);
+    free(selectedGames);
 
     return 0;
 }
