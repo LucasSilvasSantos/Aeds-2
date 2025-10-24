@@ -1,7 +1,7 @@
 import java.io.*;      
 import java.util.*;    
 
-public class mergesort {
+public class heapsort {
 
     // [0] Constantes e contadores
     // - MATRICULA: identificacao para o arquivo de log
@@ -13,25 +13,25 @@ public class mergesort {
     // [1] main()
     // - fluxo principal: lê CSV, cria objetos Game, remove duplicatas,
     //   prepara array ordenado por ID, lê IDs da entrada, monta vetor de pesquisa,
-    //   ordena por preço (mergeSort), imprime top5 (caros/baratos) e escreve log.
+    //   ordena por estimatedOwners (heapSort), imprime resultados e escreve log.
     public static void main(String[] args) throws Exception {
         // [1.1] Leitura do CSV
         // - Abre /tmp/games.csv com BufferedReader
         // - Para cada linha: CsvParser.parseLine -> Game.fromCsvFields -> adiciona em lista
         BufferedReader br = new BufferedReader(new FileReader("/tmp/games.csv"));
         String header = br.readLine(); 
-        List<Game> lista = new ArrayList<>(); // não pode 
+        List<Game> lista = new ArrayList<>();
         String linha;
         while ((linha = br.readLine()) != null) {
             List<String> fields = CsvParser.parseLine(linha);
             if (fields.size() < 14) continue;
-            lista.add(Game.fromCsvFields(fields)); // não poder
+            lista.add(Game.fromCsvFields(fields));
         }
         br.close();
 
         // [1.2] Detecção rápida de duplicatas (por id)
         // - conta ocorrências com HashMap para DEBUG (imprime em System.err)
-        Map<Integer,Integer> counts = new HashMap<>(); // não pode
+        Map<Integer,Integer> counts = new HashMap<>();
         for (Game g : lista) counts.put(g.id, counts.getOrDefault(g.id, 0) + 1);
         for (Map.Entry<Integer,Integer> e : counts.entrySet()) {
             if (e.getValue() > 1) System.err.println("Duplicado AppID=" + e.getKey() + " vezes=" + e.getValue());
@@ -39,7 +39,7 @@ public class mergesort {
 
         // [1.3] Remover duplicatas mantendo primeira ocorrência
         // - LinkedHashMap preserva ordem de inserção; transforma em array arr
-        Map<Integer, Game> uniq = new LinkedHashMap<>(); 
+        Map<Integer, Game> uniq = new LinkedHashMap<>();
         for (Game g : lista) {
             if (!uniq.containsKey(g.id)) uniq.put(g.id, g);
         }
@@ -56,7 +56,7 @@ public class mergesort {
         // - usa Scanner(System.in) para ler linhas até "FIM"
         // - converte cada linha em int e busca em arrById via binarySearchById
         Scanner sc = new Scanner(System.in);
-        Game pesquisaTemp[] = new Game[100]; // OBS: tamanho fixo — considerar ArrayList
+        Game pesquisaTemp[] = new Game[100];
         int pesquisaAux = 0;
         while (sc.hasNextLine()) {
             String buscaId = sc.nextLine().trim();
@@ -70,100 +70,99 @@ public class mergesort {
         }
         sc.close();
 
-        // [1.6] Copiar pesquisados e ordenar por preço (mergeSort)
+        // [1.6] Copiar pesquisados e ordenar por estimatedOwners (heapSort)
         // - cria array pesquisa sem nulls; mede tempo com System.nanoTime()
         Game[] pesquisa = Arrays.copyOf(pesquisaTemp, pesquisaAux);
         long t0 = System.nanoTime();
-        if (pesquisa.length > 1) mergeSort(pesquisa); // chamada para ordenar por price,id
+        if (pesquisa.length > 1) heapSort(pesquisa);
         long t1 = System.nanoTime();
         long tempoNano = t1 - t0;
 
-        // [1.7] Impressão: 5 preços mais caros
-        // - varre do fim para o começo (array ordenado asc por preço)
-        // - pula IDs já impressos (usedIds) para evitar duplicatas
-        MyIO.println("| 5 preços mais caros |");
-        Set<Integer> usedIds = new HashSet<>();
-        int printed = 0;
-        for (int i = pesquisa.length - 1; i >= 0 && printed < 5; i--) {
-            Game g = pesquisa[i];
-            if (g == null) continue;
-            if (usedIds.contains(g.id)) continue;
-            System.out.println(g.toString());
-            usedIds.add(g.id);
-            printed++;
-        }
-        System.out.println();
-
-        // [1.8] Impressão: 5 preços mais baratos
-        // - varre do começo para o fim, mesma lógica de pular IDs duplicados
-        MyIO.println("| 5 preços mais baratos |");
-        usedIds.clear();
-        printed = 0;
-        for (int i = 0; i < pesquisa.length && printed < 5; i++) {
-            Game g = pesquisa[i];
-            if (g == null) continue;
-            if (usedIds.contains(g.id)) continue;
-            System.out.println(g.toString());
-            usedIds.add(g.id);
-            printed++;
-        }
-
-        // [1.9] Geracao do arquivo de log
-        // - escreve MATRICULA, comparacoes, movimentos, tempoNano em arquivo
-        String logName = MATRICULA + "_mergesort.txt";
-        try (PrintWriter pw = new PrintWriter(new FileWriter(logName))) {
-            pw.printf("%s %d %d %d\n", MATRICULA, comparacoes, movimentos, tempoNano);
-        }
-    }
-
-    // [2] mergeSort (entrada)
-    // - cria array auxiliar e chama mergesort recursivo
-    private static void mergeSort(Game[] a) {
-        if (a == null || a.length < 2) return;
-        Game[] aux = new Game[a.length];
-        mergesort(a, aux, 0, a.length - 1);
-    }
-
-    // [3] mergesort (recursivo)
-    // - divide recursivamente o array em metades
-    private static void mergesort(Game[] a, Game[] aux, int left, int right) {
-        if (left >= right) return;
-        int mid = (left + right) / 2;
-        mergesort(a, aux, left, mid);
-        mergesort(a, aux, mid + 1, right);
-        merge(a, aux, left, mid, right);
-    }
-
-    // [4] merge (mesclagem)
-    // - copia intervalo para aux e mescla comparando com compareAux
-    // - atualiza contadores (comparações / movements)
-    private static void merge(Game[] a, Game[] aux, int left, int mid, int right) {
-        for (int k = left; k <= right; k++) {
-            aux[k] = a[k];
-        }
-        int i = left;
-        int j = mid + 1;
-        int k = left;
-        while (i <= mid && j <= right) {
-            comparacoes++;                  // contador de comparacoes
-            if (compareAux(aux[i], aux[j]) <= 0) {
-                a[k++] = aux[i++];
-                movimentos++;
-            } else {
-                a[k++] = aux[j++];
-                movimentos++;
+        // [1.7] Impressão dos resultados ordenados
+        // - imprime todos os jogos ordenados por estimatedOwners (e AppID como desempate)
+        for (int i = 0; i < pesquisa.length; i++) {
+            if (pesquisa[i] != null) {
+                System.out.println(pesquisa[i].toString());
             }
         }
-        while (i <= mid) { a[k++] = aux[i++]; movimentos++; }
-        while (j <= right) { a[k++] = aux[j++]; movimentos++; }
+
+        // [1.8] Geracao do arquivo de log
+        // - escreve MATRICULA, comparacoes, movimentos, tempoNano em arquivo
+        String logName = MATRICULA + "_heapsort.txt";
+        try (PrintWriter pw = new PrintWriter(new FileWriter(logName))) {
+            pw.printf("%s\t%d\t%d\t%d\n", MATRICULA, comparacoes, movimentos, tempoNano);
+        }
     }
 
-    // [5] compareAux
-    // - ordena por price (float) asc; em empate desempata por id asc
-    // - usar este comparator + imprimir do fim p/ começo resulta em price desc, id desc
-    private static int compareAux(Game x, Game y) {
-        if (Float.compare(x.price, y.price) < 0) return -1;
-        if (Float.compare(x.price, y.price) > 0) return 1;
+    // [2] heapSort (entrada)
+    // - constrói o heap e depois extrai elementos ordenadamente
+    private static void heapSort(Game[] a) {
+        if (a == null || a.length < 2) return;
+        int n = a.length;
+        
+        // Construir heap (heapify)
+        for (int i = n / 2 - 1; i >= 0; i--) {
+            heapify(a, n, i);
+        }
+        
+        // Extrair elementos do heap um por um
+        for (int i = n - 1; i > 0; i--) {
+            // Move raiz atual para o fim
+            swap(a, 0, i);
+            movimentos += 3; // swap conta como 3 movimentações
+            
+            // Chama heapify na raiz do heap reduzido
+            heapify(a, i, 0);
+        }
+    }
+
+    // [3] heapify
+    // - mantém a propriedade de max-heap para o subárvore com raiz em i
+    private static void heapify(Game[] a, int n, int i) {
+        int largest = i;
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        
+        // Se filho esquerdo e maior que raiz
+        if (left < n) {
+            comparacoes++;
+            if (compareHeap(a[left], a[largest]) > 0) {
+                largest = left;
+            }
+        }
+        
+        // Se filho direito e maior que o maior ate agora
+        if (right < n) {
+            comparacoes++;
+            if (compareHeap(a[right], a[largest]) > 0) {
+                largest = right;
+            }
+        }
+        
+        // Se o maior não é a raiz
+        if (largest != i) {
+            swap(a, i, largest);
+            movimentos += 3; // swap conta como 3 movimentações
+            
+            // Recursivamente heapify a subárvore afetada
+            heapify(a, n, largest);
+        }
+    }
+
+    // [4] swap
+    // - troca dois elementos no array
+    private static void swap(Game[] a, int i, int j) {
+        Game temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+    }
+
+    // [5] compareHeap
+    // - ordena por estimatedOwners asc; em empate desempata por id asc
+    private static int compareHeap(Game x, Game y) {
+        if (x.estimatedOwners < y.estimatedOwners) return -1;
+        if (x.estimatedOwners > y.estimatedOwners) return 1;
+        // Em caso de empate, desempata por id
         if (x.id < y.id) return -1;
         if (x.id > y.id) return 1;
         return 0;
@@ -363,7 +362,7 @@ public class mergesort {
         }
 
         @Override
-        public String toString() { return mergesort.gameToString(this); }
+        public String toString() { return heapsort.gameToString(this); }
     }
 
     // [8] gameToString
@@ -400,7 +399,7 @@ public class mergesort {
     }
 
     // [10] binarySearchById
-    // - busca binaria em arr ordenado por id
+    // - busca binária em arr ordenado por id
     private static int binarySearchById(Game[] a, int id) {
         int l = 0, r = a.length - 1;
         while (l <= r) {
@@ -412,12 +411,3 @@ public class mergesort {
         return -1;
     }
 }
-
-
-
-
-
-
-
-// so posso usar equals, charAt, length, substring, toLowerCase, toUpperCase, parseInt, parseFloat,
-// em c atoi e atof , string.h  mas so pode str.compare.str.length,str.copy,str.cat
