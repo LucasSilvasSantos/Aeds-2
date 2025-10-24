@@ -7,7 +7,7 @@ public class heapsort_v2 {
     private static long movimentos = 0;
     
     public static void main(String[] args) throws Exception {
-        // Ler CSV
+        
         BufferedReader br = new BufferedReader(new FileReader("/tmp/games.csv"));
         br.readLine(); // pular header
         
@@ -22,7 +22,7 @@ public class heapsort_v2 {
         }
         br.close();
         
-        // Remover duplicatas (manter primeira ocorrencia)
+        
         Game[] uniqueGames = new Game[gamesCount];
         int uniqueCount = 0;
         for (int i = 0; i < gamesCount; i++) {
@@ -38,7 +38,7 @@ public class heapsort_v2 {
             }
         }
         
-        // Copiar para arrById e ordenar por ID (selection sort)
+        
         Game[] arrById = new Game[uniqueCount];
         for (int i = 0; i < uniqueCount; i++) {
             arrById[i] = uniqueGames[i];
@@ -66,13 +66,13 @@ public class heapsort_v2 {
         }
         stdin.close();
         
-        // Ordenar por estimatedOwners usando heapSort
+        
         long t0 = System.nanoTime();
         if (pesquisaCount > 1) heapSort(pesquisa, pesquisaCount);
         long t1 = System.nanoTime();
         long tempoNano = t1 - t0;
         
-        // Imprimir todos os registros ordenados
+       
         for (int i = 0; i < pesquisaCount; i++) {
             if (pesquisa[i] != null) {
                 MyIO.println(pesquisa[i].toString());
@@ -85,22 +85,22 @@ public class heapsort_v2 {
         pw.close();
     }
     
-    // === HEAP SORT ===
+    
     private static void heapSort(Game[] a, int n) {
         if (n < 2) return;
         
-        // Construir heap
+        
         for (int i = n / 2 - 1; i >= 0; i--) {
             heapify(a, n, i);
         }
         
-        // Extrair elementos do heap
+        
         for (int i = n - 1; i > 0; i--) {
-            // Move raiz para o fim
+            
             swap(a, 0, i);
             movimentos += 3;
             
-            // Heapify na raiz do heap reduzido
+            
             heapify(a, i, 0);
         }
     }
@@ -110,7 +110,7 @@ public class heapsort_v2 {
         int left = 2 * i + 1;
         int right = 2 * i + 2;
         
-        // Se filho esquerdo e maior que raiz
+        
         if (left < n) {
             comparacoes++;
             if (compareByOwners(a[left], a[largest]) > 0) {
@@ -118,7 +118,7 @@ public class heapsort_v2 {
             }
         }
         
-        // Se filho direito e maior que o maior ate agora
+        
         if (right < n) {
             comparacoes++;
             if (compareByOwners(a[right], a[largest]) > 0) {
@@ -126,12 +126,12 @@ public class heapsort_v2 {
             }
         }
         
-        // Se o maior nao e a raiz
+       
         if (largest != i) {
             swap(a, i, largest);
             movimentos += 3;
             
-            // Recursivamente heapify a subarvore afetada
+           
             heapify(a, n, largest);
         }
     }
@@ -150,7 +150,7 @@ public class heapsort_v2 {
         return 0;
     }
     
-    // === SELECTION SORT BY ID ===
+    
     private static void sortById(Game[] a, int n) {
         for (int i = 0; i < n - 1; i++) {
             int minIdx = i;
@@ -167,7 +167,7 @@ public class heapsort_v2 {
         }
     }
     
-    // === BINARY SEARCH ===
+    
     private static int binarySearchById(Game[] a, int n, int id) {
         int l = 0, r = n - 1;
         while (l <= r) {
@@ -179,7 +179,7 @@ public class heapsort_v2 {
         return -1;
     }
     
-    // === CSV PARSER (manual, sem replaceAll) ===
+   
     private static String[] parseCsvLine(String line) {
         if (line == null) return null;
         
@@ -215,7 +215,7 @@ public class heapsort_v2 {
         return finalResult;
     }
     
-    // === CLASSE GAME ===
+    
     static class Game {
         int id;
         String name;
@@ -285,7 +285,7 @@ public class heapsort_v2 {
             s = trim(s);
             if (length(s) == 0) return def;
             
-            // Remover caracteres nao numericos (exceto - no inicio)
+            
             StringBuilder clean = new StringBuilder();
             for (int i = 0; i < length(s); i++) {
                 char c = charAt(s, i);
@@ -314,7 +314,7 @@ public class heapsort_v2 {
             String lower = toLowerCase(s);
             if (equalsStr(lower, "free to play")) return 0.0f;
             
-            // Remover tudo exceto digitos, ponto e virgula
+            
             StringBuilder clean = new StringBuilder();
             for (int i = 0; i < length(s); i++) {
                 char c = charAt(s, i);
@@ -326,7 +326,7 @@ public class heapsort_v2 {
             String cleanStr = clean.toString();
             if (length(cleanStr) == 0) return 0.0f;
             
-            // Trocar virgula por ponto (manual)
+           
             StringBuilder finalStr = new StringBuilder();
             for (int i = 0; i < length(cleanStr); i++) {
                 char c = charAt(cleanStr, i);
@@ -352,7 +352,7 @@ public class heapsort_v2 {
             if (length(s) == 0 || equalsStr(s, "tbd")) return -1.0f;
             if (equalsStr(s, "0") || equalsStr(s, "0.0")) return 0.0f;
             
-            // Limpar (manter apenas digitos, ponto, virgula, menos)
+            
             StringBuilder clean = new StringBuilder();
             for (int i = 0; i < length(s); i++) {
                 char c = charAt(s, i);
@@ -364,7 +364,7 @@ public class heapsort_v2 {
             String cleanStr = clean.toString();
             if (length(cleanStr) == 0) return -1.0f;
             
-            // Trocar virgula por ponto
+            
             StringBuilder finalStr = new StringBuilder();
             for (int i = 0; i < length(cleanStr); i++) {
                 char c = charAt(cleanStr, i);
@@ -447,7 +447,7 @@ public class heapsort_v2 {
             raw = trim(raw);
             if (length(raw) == 0) return "";
             
-            // Tentar extrair ano (4 digitos)
+            
             int year = -1;
             for (int i = 0; i <= length(raw) - 4; i++) {
                 boolean isYear = true;
@@ -466,7 +466,7 @@ public class heapsort_v2 {
             
             if (year == -1) return raw;
             
-            // Simplificado: retornar 01/01/ano
+            
             return "01/01/" + year;
         }
         
@@ -503,7 +503,7 @@ public class heapsort_v2 {
         }
     }
     
-    // === METODOS AUXILIARES PERMITIDOS ===
+    
     private static boolean equalsStr(String a, String b) {
         return a.equals(b);
     }
@@ -552,7 +552,7 @@ public class heapsort_v2 {
     }
 }
 
-// Classe MyIO (assumindo que voce tem essa classe)
+
 class MyIO {
     public static void println(String s) {
         System.out.println(s);

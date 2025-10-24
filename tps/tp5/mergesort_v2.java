@@ -7,11 +7,10 @@ public class mergesort_v2 {
     private static long movimentos = 0;
     
     public static void main(String[] args) throws Exception {
-        // Ler CSV
         BufferedReader br = new BufferedReader(new FileReader("/tmp/games.csv"));
         String header = br.readLine();
         
-        Game[] games = new Game[50000]; // Tamanho fixo grande
+        Game[] games = new Game[50000];
         int gamesCount = 0;
         
         String linha;
@@ -22,7 +21,6 @@ public class mergesort_v2 {
         }
         br.close();
         
-        // Remover duplicatas (manter primeira ocorrencia)
         Game[] uniqueGames = new Game[gamesCount];
         int uniqueCount = 0;
         for (int i = 0; i < gamesCount; i++) {
@@ -38,14 +36,12 @@ public class mergesort_v2 {
             }
         }
         
-        // Copiar para arrById e ordenar por ID (selection sort)
         Game[] arrById = new Game[uniqueCount];
         for (int i = 0; i < uniqueCount; i++) {
             arrById[i] = uniqueGames[i];
         }
         sortById(arrById, uniqueCount);
         
-        // Ler IDs da entrada
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         Game[] pesquisa = new Game[100];
         int pesquisaCount = 0;
@@ -66,14 +62,12 @@ public class mergesort_v2 {
         }
         stdin.close();
         
-        // Ordenar por preco usando mergeSort
         long t0 = System.nanoTime();
         if (pesquisaCount > 1) mergeSort(pesquisa, pesquisaCount);
         long t1 = System.nanoTime();
         long tempoNano = t1 - t0;
         
-        // Imprimir 5 mais caros (do fim para o comeco)
-        MyIO.println("| 5 precos mais caros |");
+        MyIO.println("| 5 preços mais caros |");
         int[] usedIds = new int[pesquisaCount];
         int usedCount = 0;
         int printed = 0;
@@ -97,8 +91,7 @@ public class mergesort_v2 {
         }
         MyIO.println("");
         
-        // Imprimir 5 mais baratos (do comeco para o fim)
-        MyIO.println("| 5 precos mais baratos |");
+        MyIO.println("| 5 preços mais baratos |");
         usedCount = 0;
         printed = 0;
         
@@ -202,7 +195,7 @@ public class mergesort_v2 {
         return -1;
     }
     
-    // === CSV PARSER (manual, sem replaceAll) ===
+ 
     private static String[] parseCsvLine(String line) {
         if (line == null) return null;
         
@@ -308,7 +301,7 @@ public class mergesort_v2 {
             s = trim(s);
             if (length(s) == 0) return def;
             
-            // Remover caracteres nao numericos (exceto - no inicio)
+           
             StringBuilder clean = new StringBuilder();
             for (int i = 0; i < length(s); i++) {
                 char c = charAt(s, i);
@@ -349,7 +342,7 @@ public class mergesort_v2 {
             String cleanStr = clean.toString();
             if (length(cleanStr) == 0) return 0.0f;
             
-            // Trocar virgula por ponto (manual)
+      
             StringBuilder finalStr = new StringBuilder();
             for (int i = 0; i < length(cleanStr); i++) {
                 char c = charAt(cleanStr, i);
