@@ -143,158 +143,113 @@ void quickSort(Game* arr, int left, int right) {
 }
 
 int parseInt(const char* s) {
+    if (!s) return 0;
     int resultado = 0;
-    for (int i = 0; s[i] != '\0'; i++) {
-        if (isdigit((unsigned char)s[i])) {
-            resultado = resultado * 10 + (s[i] - '0');
-        }
+    int i = 0;
+    while (s[i] == ' ' || s[i] == '"') i++;
+    while (s[i] >= '0' && s[i] <= '9') {
+        resultado = resultado * 10 + (s[i] - '0');
+        i++;
     }
     return resultado;
 }
-
 
 float parseFloat(const char* s) {
     if (!s) return 0.0f;
     char buf[MAX_FIELD_SIZE];
     int bi = 0;
- 
-    for (int i = 0; s[i] != '\0' && bi < (int)sizeof(buf)-1; i++) {
+    for (int i = 0; s[i] != '\0' && bi < MAX_FIELD_SIZE-1; i++) {
         char c = s[i];
-        if ((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-' ) buf[bi++] = c;
+        if ((c >= '0' && c <= '9') || c == '.' || c == ',') buf[bi++] = c;
     }
     buf[bi] = '\0';
-    
     for (int i = 0; buf[i] != '\0'; i++) if (buf[i] == ',') buf[i] = '.';
-    
     return (float)atof(buf);
 }
 
 
 void formatarData(char* dest, const char* data) {
-    if (!data || data[0] == '\0') { strcpy(dest, "01/01/0000"); return; }
-
+    if (!data || data[0] == '\0') { 
+        strcpy(dest, "01/01/0000"); 
+        return; 
+    }
     char s[256];
-    strncpy(s, data, sizeof(s)-1);
-    s[sizeof(s)-1] = '\0';
-
-   
-    int start = 0, end = (int)strlen(s) - 1;
-    while (s[start] && isspace((unsigned char)s[start])) start++;
-    while (end >= start && isspace((unsigned char)s[end])) s[end--] = '\0';
-
-    if (s[start] == '"' && s[end] == '"') {
-        start++; s[end] = '\0';
+    int si = 0, i = 0;
+    while (data[i] == ' ' || data[i] == '"') i++;
+    while (data[i] && data[i] != '"' && si < 255) s[si++] = data[i++];
+    s[si] = '\0';
+    
+    int d, m, y;
+    if (sscanf(s, "%d/%d/%d", &d, &m, &y) == 3) {
+        sprintf(dest, "%02d/%02d/%04d", d, m, y);
+        return;
     }
-
-    char *p = s + start;
-
- 
-    {
-        int d,m,y;
-        if (sscanf(p, "%d/%d/%d", &d, &m, &y) == 3) {
-            sprintf(dest, "%02d/%02d/%04d", d, m, y);
-            return;
-        }
+    if (sscanf(s, "%d-%d-%d", &y, &m, &d) == 3) {
+        sprintf(dest, "%02d/%02d/%04d", d, m, y);
+        return;
     }
-   
-    {
-        int y,m,d;
-        if (sscanf(p, "%d-%d-%d", &y, &m, &d) == 3) {
-            sprintf(dest, "%02d/%02d/%04d", d, m, y);
-            return;
-        }
+    
+    char mon[32];
+    if (sscanf(s, "%31s %d, %d", mon, &d, &y) == 3 || sscanf(s, "%d %31s %d", &d, mon, &y) == 3) {
+        char mlow[4] = {0};
+        for (i = 0; i < 3 && mon[i]; i++) mlow[i] = tolower(mon[i]);
+        int mm = 1;
+        if (strcmp(mlow, "jan") == 0) mm = 1;
+        else if (strcmp(mlow, "feb") == 0) mm = 2;
+        else if (strcmp(mlow, "mar") == 0) mm = 3;
+        else if (strcmp(mlow, "apr") == 0) mm = 4;
+        else if (strcmp(mlow, "may") == 0) mm = 5;
+        else if (strcmp(mlow, "jun") == 0) mm = 6;
+        else if (strcmp(mlow, "jul") == 0) mm = 7;
+        else if (strcmp(mlow, "aug") == 0) mm = 8;
+        else if (strcmp(mlow, "sep") == 0) mm = 9;
+        else if (strcmp(mlow, "oct") == 0) mm = 10;
+        else if (strcmp(mlow, "nov") == 0) mm = 11;
+        else if (strcmp(mlow, "dec") == 0) mm = 12;
+        sprintf(dest, "%02d/%02d/%04d", d, mm, y);
+        return;
     }
-  
-    {
-        char mon[32];
-        int d,y;
-       
-        if (sscanf(p, "%31s %d, %d", mon, &d, &y) == 3) {
-        
-        } else if (sscanf(p, "%d %31s %d", &d, mon, &y) == 3) {
-       
-        } else {
-            mon[0] = '\0';
-            y = -1;
-        }
-        if (mon[0] != '\0' && y > 0) {
-       
-            char mlow[4] = {'\0','\0','\0','\0'};
-            int i;
-            for (i = 0; i < 3 && mon[i]; i++) mlow[i] = (char)tolower((unsigned char)mon[i]);
-            mlow[i] = '\0';
-            int mm = 1;
-            if (strcmp(mlow, "jan") == 0) mm = 1;
-            else if (strcmp(mlow, "feb") == 0) mm = 2;
-            else if (strcmp(mlow, "mar") == 0) mm = 3;
-            else if (strcmp(mlow, "apr") == 0) mm = 4;
-            else if (strcmp(mlow, "may") == 0) mm = 5;
-            else if (strcmp(mlow, "jun") == 0) mm = 6;
-            else if (strcmp(mlow, "jul") == 0) mm = 7;
-            else if (strcmp(mlow, "aug") == 0) mm = 8;
-            else if (strcmp(mlow, "sep") == 0) mm = 9;
-            else if (strcmp(mlow, "oct") == 0) mm = 10;
-            else if (strcmp(mlow, "nov") == 0) mm = 11;
-            else if (strcmp(mlow, "dec") == 0) mm = 12;
-            sprintf(dest, "%02d/%02d/%04d", d, mm, y);
-            return;
-        }
-    }
-
-
     strcpy(dest, "01/01/0000");
 }
 
 
 void formatarColchetes(char*** dest_array, int* count, const char* campo) {
-    char temp_campo[MAX_FIELD_SIZE];
-    strncpy(temp_campo, campo, MAX_FIELD_SIZE - 1);
-    temp_campo[MAX_FIELD_SIZE - 1] = '\0';
+    char temp[MAX_FIELD_SIZE];
+    int ti = 0, i = 0;
+    while (campo[i] && ti < MAX_FIELD_SIZE-1) temp[ti++] = campo[i++];
+    temp[ti] = '\0';
     
-    char* start = temp_campo;
-
-  
-    if (strlen(start) > 1 && start[0] == '"' && start[strlen(start) - 1] == '"') {
-        start[strlen(start) - 1] = '\0';
+    char* start = temp;
+    int len = strlen(start);
+    if (len > 1 && start[0] == '"' && start[len-1] == '"') {
+        start[len-1] = '\0';
+        start++;
+        len -= 2;
+    }
+    if (len > 1 && start[0] == '[' && start[len-1] == ']') {
+        start[len-1] = '\0';
         start++;
     }
-    
-    if (strlen(start) > 1 && start[0] == '[' && start[strlen(start) - 1] == ']') {
-        start[strlen(start) - 1] = '\0';
-        start++;
-    }
-
     
     *count = 0;
     if (strlen(start) > 0) {
         *count = 1;
-        for (int i = 0; start[i] != '\0'; i++) {
-            if (start[i] == ',') (*count)++;
-        }
+        for (i = 0; start[i]; i++) if (start[i] == ',') (*count)++;
     }
-
     if (*count == 0) {
         *dest_array = NULL;
         return;
     }
-
+    
     *dest_array = (char**)malloc(*count * sizeof(char*));
     if (!*dest_array) return;
-
     
     char* token = strtok(start, ",");
     int index = 0;
-    while (token != NULL && index < *count) {
-   
-        while (isspace((unsigned char)*token)) token++;
-        if (*token == '\'') token++;
-
+    while (token && index < *count) {
+        while (*token == ' ' || *token == '\'') token++;
         char* end = token + strlen(token) - 1;
-        while (end >= token && (isspace((unsigned char)*end) || *end == '\'')) {
-            *end = '\0';
-            end--;
-        }
-
+        while (end >= token && (*end == ' ' || *end == '\'')) *end-- = '\0';
         (*dest_array)[index++] = strdup(token);
         token = strtok(NULL, ",");
     }
@@ -303,42 +258,37 @@ void formatarColchetes(char*** dest_array, int* count, const char* campo) {
 
 void splitManual(char*** dest_fields, int* num_fields, const char* linha) {
     *num_fields = 0;
-    bool dentroAspas = false, dentroColchete = false;
-
-
-    for (int i = 0; linha[i] != '\0'; i++) {
-        if (linha[i] == '"') dentroAspas = !dentroAspas;
-        else if (linha[i] == '[') dentroColchete = true;
-        else if (linha[i] == ']') dentroColchete = false;
-        else if (linha[i] == ',' && !dentroAspas && !dentroColchete) (*num_fields)++;
+    bool aspas = false, colchete = false;
+    for (int i = 0; linha[i]; i++) {
+        if (linha[i] == '"') aspas = !aspas;
+        else if (linha[i] == '[') colchete = true;
+        else if (linha[i] == ']') colchete = false;
+        else if (linha[i] == ',' && !aspas && !colchete) (*num_fields)++;
     }
     (*num_fields)++;
-
+    
     *dest_fields = (char**)malloc(*num_fields * sizeof(char*));
-
-    char temp_field[MAX_FIELD_SIZE];
-    int field_index = 0, char_index = 0;
-    dentroAspas = false;
-    dentroColchete = false;
-
-    for (int i = 0; linha[i] != '\0'; i++) {
+    char temp[MAX_FIELD_SIZE];
+    int field_idx = 0, char_idx = 0;
+    aspas = colchete = false;
+    
+    for (int i = 0; linha[i]; i++) {
         char c = linha[i];
         if (c == '\n' || c == '\r') continue;
-
-        if (c == '"') dentroAspas = !dentroAspas;
-        else if (c == '[') dentroColchete = true;
-        else if (c == ']') dentroColchete = false;
-
-        if (c == ',' && !dentroAspas && !dentroColchete) {
-            temp_field[char_index] = '\0';
-            (*dest_fields)[field_index++] = strdup(temp_field);
-            char_index = 0;
+        if (c == '"') aspas = !aspas;
+        else if (c == '[') colchete = true;
+        else if (c == ']') colchete = false;
+        
+        if (c == ',' && !aspas && !colchete) {
+            temp[char_idx] = '\0';
+            (*dest_fields)[field_idx++] = strdup(temp);
+            char_idx = 0;
         } else {
-            temp_field[char_index++] = c;
+            temp[char_idx++] = c;
         }
     }
-    temp_field[char_index] = '\0';
-    (*dest_fields)[field_index] = strdup(temp_field);
+    temp[char_idx] = '\0';
+    (*dest_fields)[field_idx] = strdup(temp);
 }
 
 
