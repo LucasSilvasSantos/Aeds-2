@@ -1,6 +1,88 @@
 import java.io.*;
 
-public class binaria {
+class Lista {
+    private Lista primeiro,ultimo;
+    private int n; // contador de elementos na lista
+public Lista (){
+ primeiro = new Lista ();
+  ultimo = primeiro ;
+}
+    public void InserirLista (Jogo jogo) throws Exception {
+     if (n >= array.length){
+         System.out.println("erro ao inserir na lista, lista está cheia");
+     } 
+     else {
+         array[n]= jogo; //  insiro o jogo na posição n
+         n++; // conto a cada inserção que é feita
+     }
+          
+
+   }
+ public void inserirFim (int x ){
+
+
+
+
+
+
+ }
+ public int removerInicio() {
+
+
+
+
+
+
+ }
+public int removerFim(){
+
+
+
+
+
+
+}
+public void inserir (int x, int pos){
+
+
+
+
+
+
+
+
+
+}
+public int remover ( int pos ){
+
+
+
+
+
+
+
+}
+
+
+public void mostrar (){
+
+
+
+
+
+
+    
+}
+
+
+
+
+
+
+}
+
+
+public class Dinamica {
     
     private static final String MATRICULA = "891378";
     private static long comparacoes = 0;
@@ -10,13 +92,13 @@ public class binaria {
         br.readLine();
         
         Game[] games = new Game[50000];
-        int gamesCount = 0;
+        int gamesCount = 0; // contador 
         
         String linha;
-        while ((linha = br.readLine()) != null) {
-            String[] fields = parseCsvLine(linha);
-            if (fields == null || fields.length < 14) continue;
-            games[gamesCount++] = Game.fromCsvFields(fields);
+        while ((linha = br.readLine()) != null) { // lendo linha por linha 
+            String[] fields = parseCsvLine(linha); 
+            if (fields == null || fields.length < 14) continue;// ignoro linhas ivalidas ou linhas com menos de 14 campos
+            games[gamesCount++] = Game.fromCsvFields(fields); // adiciono um contador de jogos lidos para cada jogo lido
         }
         br.close();
         
