@@ -1,10 +1,23 @@
 import java.io.*;
-
+class Celula{
+public Jogo elemento;
+public Celula prox;
+public Celula ( Jogo jogo ){
+ elemento = jogo;
+  prox = null;
+  
+}
+public Celula ( ){
+ elemento = 0 ;
+  prox = null;
+  
+}
+}
 class Lista {
-    private Lista primeiro,ultimo;
+    private Celula primeiro,ultimo;
     private int n; // contador de elementos na lista
 public Lista (){
- primeiro = new Lista ();
+ primeiro = new Celula();
   ultimo = primeiro ;
 }
     public void InserirLista (Jogo jogo) throws Exception {
@@ -18,21 +31,23 @@ public Lista (){
           
 
    }
- public void inserirFim (int x ){
+ public void inserirFim ( Jogo x ){
 
-
-
-
-
+    ultimo.prox =  new Celula (x);
+    ultimo = ultimo.prox;
+    
 
  }
  public int removerInicio() {
-
-
-
-
-
-
+  if  ( primeiro == ultimo  ) {
+  throw new illegalargumentexception("Lista vazia");
+   }
+  Celula tmp = primeiro.prox ; 
+    primeiro.prox= tmp.prox;
+     tmp.prox = null;
+     int elm=tmp.elemento;
+    tmp=null;
+     return elm;
  }
 public int removerFim(){
 
@@ -65,13 +80,11 @@ public int remover ( int pos ){
 
 
 public void mostrar (){
-
-
-
-
-
-
-    
+    if (primeiro==ultimo) throw new illegalargumentexception("Lista vazia");
+         Celula tmp= primeiro.prox;
+          for( ; tmp !=null ; tmp = tmp.prox){
+         System.out.println(tpm.elemento);
+          }    
 }
 
 
