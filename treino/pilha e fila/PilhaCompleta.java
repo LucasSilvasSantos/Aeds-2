@@ -1,8 +1,8 @@
-
 import java.util.Scanner;
+import java.util.Stack;
 
 class Celula {
-
+    
     public int elemento;
     public Celula prox;
 
@@ -24,6 +24,27 @@ class Pilha {
         topo = null;
     }
 
+   public void inserirTopo  ( int x) {
+     Celula tmp = new Celula (x);
+     topo.prox = tmp;
+      topo= tmp ;
+      tmp = null;
+   }
+   
+    public int somar (){
+   
+   int total =0;
+    Celula i;
+   for( i = topo; i != null; i=i.prox ) {
+   total =i.elemento ;
+
+   }
+
+ return total;
+    }
+   
+   
+   
     public void inserir(int x) {
         Celula tmp = new Celula(x); // crio uma celula temporaria para armazenar um elemento que vai ser inserido 
         tmp.prox = topo;   // faço a proxima celula temporaria apontar para topo 
@@ -63,6 +84,25 @@ class Pilha {
 
     }
 }
+
+ 
+public  static void ordem (Stack<integer> pilha ) { 
+     if( pilha.topo == -1 ){
+  return;
+     }
+
+ int elemento = pilha.pop();
+  ordem(pilha);
+  System.out.print(elemento + " ");
+  pilha.push(elemento);
+
+}
+
+
+
+
+
+
 
 public class PilhaCompleta {
 
