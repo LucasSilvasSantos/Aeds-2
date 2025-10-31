@@ -1,5 +1,4 @@
 import java.util.Scanner;
-import java.util.Stack;
 
 class Celula {
     
@@ -84,26 +83,6 @@ class Pilha {
 
     }
 }
-
- 
-public  static void ordem (Stack<integer> pilha ) { 
-     if( pilha.topo == -1 ){
-  return;
-     }
-
- int elemento = pilha.pop();
-  ordem(pilha);
-  System.out.print(elemento + " ");
-  pilha.push(elemento);
-
-}
-
-
-
-
-
-
-
 public class PilhaCompleta {
 
     public static void main(String[] args) {
