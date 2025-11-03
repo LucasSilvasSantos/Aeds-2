@@ -1,22 +1,56 @@
 
-import javax.xml.crypto.Data;
 
-class Date {
-private int dia ;
-private int mes;
-private int ano ;
 
+class Data {
+public int dia ;
+public int mes;
+public int ano ;
+
+public Data(){
+dia = 0;
+mes = 0;
+ano = 0;
+
+
+
+
+}
 }
 
 
-
 class Jogadores {
-private  String nome ;
-private   int foto ;
- int id;
- Data Nascimento;
+public  String nome ;
+public  String foto ;
+public int id;
+public  Data Nascimento;
+public int times [];
+  
+  public Jogadores(){
+      nome = "";
+      foto = "";
+      Nascimento = new Data ();
+      id =0;
+      times = new int [0];
 
+  }
+  public void setnome (String nome ){
+    this.nome= nome;
 
+  }
+    public void setfoto (String foto ){
+     this.foto=foto;
+
+    }
+    public void setNascimento (Data Nascimento ){
+     this.Nascimento = Nascimento;
+
+    }
+     public void setid (int id ){
+     this.id=id;
+    }
+ public void settimes ( int times[]){
+    this.times= times; 
+ }
 
 
 
