@@ -10,16 +10,16 @@ public class adivinhar {
 
             int n = sc.nextInt();
 
-            int[] stack = new int[1000];
-            int[] queue = new int[1000];
-            int[] priority = new int[1000];
+            int[] stack = new int[1000];  // pilha  ultimo a entrar primeiro a sair 
+            int[] queue = new int[1000]; // fila primeiro a entrar primeiro a sair 
+            int[] priority = new int[1000]; // maior valor sai, sempre  
 
-            int top = 0;
+            int top = 0; 
             int inicio = 0;
             int fim = 0;
             int pSize = 0;
 
-            boolean isStack = true;
+            boolean isStack = true; // 
             boolean isQueue = true;
             boolean isPriority = true;
 
