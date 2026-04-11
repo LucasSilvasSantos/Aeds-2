@@ -12,8 +12,7 @@ int main() {
     char entrada[100];  
     int n, soma;
 
-    while (1) {
-        scanf("%s", entrada);
+    while (scanf("%s", entrada) == 1) { // Lê a entrada até EOF
            if (strcmp(entrada, "FIM") == 0) {
             break;  
         }
