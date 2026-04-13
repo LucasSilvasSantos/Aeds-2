@@ -27,7 +27,7 @@ public class Aleatoria {
         gerador.setSeed(4);
         while (sc.hasNextLine()) {
             String entrada = sc.nextLine();
-            if (entrada.charAt(0)==('F') && entrada.charAt(1)==('I') && entrada.charAt(2)==('M')) {
+            if (entrada.equals("FIM")) {
                 break;
             }
             System.out.println(Alterar(entrada, gerador));
