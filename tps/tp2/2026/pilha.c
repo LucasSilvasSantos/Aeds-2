@@ -224,8 +224,7 @@ int main() {
     /* segunda parte: n comandos */
     int n;
     scanf("%d", &n);
-    char lixo[2];
-    fgets(lixo, sizeof(lixo), stdin);
+    { int c; while ((c = getchar()) != '\n' && c != EOF); }
 
     char linha[512];
     for (int k = 0; k < n; k++) {
@@ -242,7 +241,7 @@ int main() {
             if (r) empilhar(pilha, r);
         } else if (linha[0] == 'R') {
             Restaurante* r = desempilhar(pilha);
-            if (r) printf("(R) %s\n", r->nome);
+            if (r) printf("(R)%s\n", r->nome);
         }
     }
 
