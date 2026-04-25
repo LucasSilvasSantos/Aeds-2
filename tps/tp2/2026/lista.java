@@ -318,14 +318,14 @@ public class lista {
             } else if (cmd.charAt(0) == 'R') {
                 if (cmd.length() > 1 && cmd.charAt(1) == 'I') {
                     Restaurante r = lista.removerInicio();
-                    System.out.println("(R) " + r.getNome());
+                    System.out.println("(R)" + r.getNome());
                 } else if (cmd.length() > 1 && cmd.charAt(1) == 'F') {
                     Restaurante r = lista.removerFim();
-                    System.out.println("(R) " + r.getNome());
+                    System.out.println("(R)" + r.getNome());
                 } else if (cmd.length() > 1 && cmd.charAt(1) == '*') {
                     int pos = lerInt(tokens[1]);
                     Restaurante r = lista.remover(pos);
-                    System.out.println("(R) " + r.getNome());
+                    System.out.println("(R)" + r.getNome());
                 }
             }
         }
