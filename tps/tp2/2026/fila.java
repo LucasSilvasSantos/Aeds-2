@@ -266,10 +266,10 @@ public class fila {
             if (r != null) {
                 if (fila.cheia()) {
                     Restaurante removido = fila.desenfileirar();
-                    System.out.println("(R) " + removido.getNome());
+                    System.out.println("(R)" + removido.getNome());
                 }
                 fila.enfileirar(r);
-                System.out.println("(I) " + fila.mediaAnoArredondada());
+                System.out.println("(I)" + fila.mediaAnoArredondada());
             }
         }
 
@@ -286,15 +286,15 @@ public class fila {
                 if (r != null) {
                     if (fila.cheia()) {
                         Restaurante removido = fila.desenfileirar();
-                        System.out.println("(R) " + removido.getNome());
+                        System.out.println("(R)" + removido.getNome());
                     }
                     fila.enfileirar(r);
-                    System.out.println("(I) " + fila.mediaAnoArredondada());
+                    System.out.println("(I)" + fila.mediaAnoArredondada());
                 }
             } else if (cmd == 'R') {
                 if (!fila.vazia()) {
                     Restaurante removido = fila.desenfileirar();
-                    System.out.println("(R) " + removido.getNome());
+                    System.out.println("(R)" + removido.getNome());
                 }
             }
         }
