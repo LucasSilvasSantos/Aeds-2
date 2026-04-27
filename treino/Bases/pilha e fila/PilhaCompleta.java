@@ -24,10 +24,10 @@ class Pilha {
     }
 
    public void inserirTopo  ( int x) {
-     Celula tmp = new Celula (x);
-     topo.prox = tmp;
-      topo= tmp ;
-      tmp = null;
+     Celula tmp = new Celula (x); // crio uma celula temporaria para armazenar um elemento que vai ser inserido 
+     topo.prox = tmp; // topo.prox aponta para a celula temporaria 
+      topo= tmp ; // topo aponta para a celula temporaria 
+      tmp = null; // tmp aponta para null e eu removo ela 
    }
    
     public int somar (){
@@ -76,7 +76,7 @@ class Pilha {
     public void mostrar() {
         System.out.print("[");
         for (Celula i = topo; i != null; i = i.prox) {
-            System.out.print(i.elemento + "");
+            System.out.print(i.elemento + ", ");
 
         }
         System.out.println("]");
