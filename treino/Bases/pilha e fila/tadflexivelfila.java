@@ -42,20 +42,30 @@ Celula tmp =primeiro;
   return elemento;
 
   }
+public int maior () {
+ if( primeiro == ultimo){
+     throw new RuntimeException ("Fila Vazia");
+ }
+ int maior = primeiro.prox.elemento;
+ for( Celula i = primeiro.prox; i != ultimo.prox; i = i. prox){
+     if(i.elemento > maior){
+         maior = i.elemento;
+     }
+ }
 
+ return maior; 
+}
 
 public int somar () {
    int somar = 0 ;
  if( primeiro == ultimo){
      throw new RuntimeException ("Fila Vazia");
  }
-   for( int i = primeiro.prox.elemento; i != ultimo.elemento; i = i. prox.elemento){
-       somar += i;
+   for( Celula i = primeiro.prox; i != ultimo.prox; i = i. prox){
+       somar += i.elemento;
    }
 
-
-
-
+ return somar; 
 }
 
   public void mostrar () {
