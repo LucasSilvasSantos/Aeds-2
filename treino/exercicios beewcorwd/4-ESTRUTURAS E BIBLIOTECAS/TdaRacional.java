@@ -1,22 +1,27 @@
-
 import java.util.Scanner;
 
 public class TdaRacional {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int entrada = sc.nextInt();
 
-        // Espera entrada com 5 tokens por caso: n1 d1 operador n2 d2
-        // Exemplo: 1 2 + 3 4  -> (1/2) + (3/4)
-        while (sc.hasNext()) {
+        for (int i = 0; i < entrada; i++) {
             if (!sc.hasNextInt()) break;
             int n1 = sc.nextInt();
+            if (!sc.hasNext()) break;
+            sc.next(); // consome '/'
             if (!sc.hasNextInt()) break;
             int d1 = sc.nextInt();
+
             if (!sc.hasNext()) break;
             String op = sc.next();
+
             if (!sc.hasNextInt()) break;
             int n2 = sc.nextInt();
+            if (!sc.hasNext()) break;
+            sc.next(); // consome '/'
             if (!sc.hasNextInt()) break;
             int d2 = sc.nextInt();
 
@@ -37,7 +42,6 @@ public class TdaRacional {
                     den = d1 * d2;
                     break;
                 case "/":
-                    // divisão (a/b) / (c/d) = (a*d) / (b*c)
                     num = n1 * d2;
                     den = d1 * n2;
                     break;
@@ -51,16 +55,19 @@ public class TdaRacional {
                 continue;
             }
 
+            int origNum = num;
+            int origDen = den;
+
             int g = gcd(Math.abs(num), Math.abs(den));
             num /= g;
             den /= g;
 
-            if (den < 0) { // manter denominador positivo
+            if (den < 0) {
                 den = -den;
                 num = -num;
             }
 
-            System.out.println(num + "/" + den);
+            System.out.println(origNum + "/" + origDen + " = " + num + "/" + den);
         }
 
         sc.close();
