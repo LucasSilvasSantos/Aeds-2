@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class selecao_parcial {
 
     private static final String MATRICULA = "891378";
-    private static final int K = 10;
+    private static int K = 0;
     private static long comparacoes = 0;
     private static long movimentacoes = 0;
 
@@ -185,7 +185,7 @@ public class selecao_parcial {
         }
     }
 
-    /* ---------- Ordenacao Parcial por Selecao (chave: nome; k=10) ---------- */
+    
 
     static void selecaoParcial(Restaurante[] arr, int n) {
         int lim = Math.min(K, n);
@@ -217,14 +217,14 @@ public class selecao_parcial {
                 if (todos[i].getId() == id) { arr[n++] = todos[i]; break; }
             }
         }
+        K = sc.hasNextInt() ? sc.nextInt() : 10;
         sc.close();
 
         long t0 = System.nanoTime();
         selecaoParcial(arr, n);
         long t1 = System.nanoTime();
 
-        int saida = Math.min(K, n);
-        for (int i = 0; i < saida; i++) System.out.println(arr[i].formatar());
+        for (int i = 0; i < n; i++) System.out.println(arr[i].formatar());
 
         PrintWriter pw = new PrintWriter(new FileWriter(MATRICULA + "_selecao_parcial.txt"));
         pw.println(MATRICULA + "\t" + comparacoes + "\t" + movimentacoes + "\t" + (t1 - t0));

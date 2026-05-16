@@ -5,7 +5,7 @@
 #include <time.h>
 
 static const char* MATRICULA = "891378";
-static const int K = 10;
+static const int K = 0;
 static long long comparacoes = 0;
 static long long movimentacoes = 0;
 
