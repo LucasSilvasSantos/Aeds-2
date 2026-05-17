@@ -5,7 +5,7 @@
 #include <time.h>
 
 static const char* MATRICULA = "891378";
-static const int K = 0;
+static const int K = 10;
 static long long comparacoes = 0;
 static long long movimentacoes = 0;
 
@@ -181,11 +181,9 @@ Colecao_Restaurantes* ler_csv() {
     return c;
 }
 
-/* ---------- Ordenacao Parcial por Insercao (chave: cidade; k=10) ---------- */
 
 void insercao_parcial(Restaurante** arr, int n) {
     int lim = n < K ? n : K;
-    /* sort the first lim elements */
     for (int i = 1; i < lim; i++) {
         Restaurante* tmp = arr[i]; movimentacoes++;
         int j = i - 1;
@@ -196,21 +194,6 @@ void insercao_parcial(Restaurante** arr, int n) {
             } else break;
         }
         arr[j + 1] = tmp; movimentacoes++;
-    }
-    /* for remaining elements: insert if smaller than arr[K-1] */
-    for (int i = K; i < n; i++) {
-        comparacoes++;
-        if (strcmp(arr[i]->cidade, arr[K - 1]->cidade) < 0) {
-            Restaurante* tmp = arr[i]; movimentacoes++;
-            int j = K - 1;
-            while (j >= 0) {
-                comparacoes++;
-                if (strcmp(arr[j]->cidade, tmp->cidade) > 0) {
-                    arr[j + 1] = arr[j]; movimentacoes++; j--;
-                } else break;
-            }
-            arr[j + 1] = tmp; movimentacoes++;
-        }
     }
 }
 
@@ -231,9 +214,8 @@ int main() {
     clock_t t1 = clock();
     double tempo = ((double)(t1 - t0)) / CLOCKS_PER_SEC * 1000.0;
 
-    int saida = n < K ? n : K;
     char buffer[2048];
-    for (int i = 0; i < saida; i++) {
+    for (int i = 0; i < n; i++) {
         formatar_restaurante(arr[i], buffer);
         printf("%s\n", buffer);
     }

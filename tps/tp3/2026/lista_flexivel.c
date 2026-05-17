@@ -184,30 +184,30 @@ typedef struct No {
 
 typedef struct {
     No* inicio;
+    No* fim;
     int tamanho;
 } Lista;
 
 Lista* criar_lista() {
     Lista* l = (Lista*) malloc(sizeof(Lista));
-    l->inicio = NULL; l->tamanho = 0;
+    l->inicio = NULL; l->fim = NULL; l->tamanho = 0;
     return l;
 }
 
 void inserir_inicio(Lista* l, Restaurante* r) {
     No* novo = (No*) malloc(sizeof(No));
     novo->restaurante = r; novo->proximo = l->inicio;
-    l->inicio = novo; l->tamanho++;
+    l->inicio = novo;
+    if (l->fim == NULL) l->fim = novo;
+    l->tamanho++;
 }
 
 void inserir_fim(Lista* l, Restaurante* r) {
     No* novo = (No*) malloc(sizeof(No));
     novo->restaurante = r; novo->proximo = NULL;
     if (l->inicio == NULL) { l->inicio = novo; }
-    else {
-        No* atual = l->inicio;
-        while (atual->proximo) atual = atual->proximo;
-        atual->proximo = novo;
-    }
+    else { l->fim->proximo = novo; }
+    l->fim = novo;
     l->tamanho++;
 }
 
@@ -235,13 +235,14 @@ Restaurante* remover_fim(Lista* l) {
     if (!l->inicio) return NULL;
     if (!l->inicio->proximo) {
         Restaurante* r = l->inicio->restaurante;
-        free(l->inicio); l->inicio = NULL; l->tamanho--;
+        free(l->inicio); l->inicio = NULL; l->fim = NULL; l->tamanho--;
         return r;
     }
     No* atual = l->inicio;
     while (atual->proximo->proximo) atual = atual->proximo;
     Restaurante* r = atual->proximo->restaurante;
     free(atual->proximo); atual->proximo = NULL;
+    l->fim = atual;
     l->tamanho--; return r;
 }
 
@@ -275,6 +276,8 @@ int main() {
     int n; scanf("%d", &n);
     { int c; while ((c = getchar()) != '\n' && c != EOF); }
 
+    int contador = 0;
+    char buffer[2048];
     char linha[512];
     for (int k = 0; k < n; k++) {
         fgets(linha, sizeof(linha), stdin);
@@ -309,10 +312,34 @@ int main() {
                 r = remover_pos(lista, pos);
             }
             if (r) printf("(R)%s\n", r->nome);
+        } else if (linha[0] == 'A') {
+            int pos = parse_int(linha + 2);
+            No* atual = lista->inicio;
+            for (int i = 0; i < pos && atual; i++) atual = atual->proximo;
+            if (atual) {
+                contador++;
+                formatar_restaurante(atual->restaurante, buffer);
+                printf("%d\n%s\n", contador, buffer);
+            }
         }
     }
 
-    char buffer[2048];
+    /* ordenar lista por nome (bubble sort trocando ponteiros de dados) */
+    int trocou;
+    do {
+        trocou = 0;
+        No* cur = lista->inicio;
+        while (cur && cur->proximo) {
+            if (strcmp(cur->restaurante->nome, cur->proximo->restaurante->nome) > 0) {
+                Restaurante* tmp = cur->restaurante;
+                cur->restaurante = cur->proximo->restaurante;
+                cur->proximo->restaurante = tmp;
+                trocou = 1;
+            }
+            cur = cur->proximo;
+        }
+    } while (trocou);
+
     No* atual = lista->inicio;
     while (atual) {
         formatar_restaurante(atual->restaurante, buffer);

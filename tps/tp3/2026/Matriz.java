@@ -2,15 +2,13 @@ import java.util.Scanner;
 
 public class Matriz {
 
-    /* ---------- Celula da matriz dinamica ---------- */
+    static int contador = 0;
 
     static class Celula {
         int valor;
         Celula dir, baixo;
         Celula(int v) { valor = v; }
     }
-
-    /* ---------- Classe Matriz dinamica ---------- */
 
     int linhas, colunas;
     Celula[][] celulas;
@@ -21,11 +19,9 @@ public class Matriz {
         for (int i = 0; i < l; i++)
             for (int j = 0; j < c; j++)
                 celulas[i][j] = new Celula(0);
-        /* conexoes horizontais */
         for (int i = 0; i < l; i++)
             for (int j = 0; j < c - 1; j++)
                 celulas[i][j].dir = celulas[i][j + 1];
-        /* conexoes verticais */
         for (int i = 0; i < l - 1; i++)
             for (int j = 0; j < c; j++)
                 celulas[i][j].baixo = celulas[i + 1][j];
@@ -51,10 +47,13 @@ public class Matriz {
     public void mostrarDiagonalPrincipal() {
         int dim = Math.min(linhas, colunas);
         StringBuilder sb = new StringBuilder();
+        Celula cur = celulas[0][0];
         for (int i = 0; i < dim; i++) {
             if (i > 0) sb.append(' ');
             sb.append(celulas[i][i].valor);
         }
+        contador++;
+        System.out.println(contador);
         System.out.println(sb.toString());
     }
 
@@ -65,20 +64,25 @@ public class Matriz {
             if (i > 0) sb.append(' ');
             sb.append(celulas[i][colunas - 1 - i].valor);
         }
+        contador++;
+        System.out.println(contador);
         System.out.println(sb.toString());
     }
 
     public void mostrar() {
         for (int i = 0; i < linhas; i++) {
-            for (int j = 0; j < colunas; j++) {
-                if (j > 0) System.out.print(' ');
-                System.out.print(celulas[i][j].valor);
+            StringBuilder sb = new StringBuilder();
+            Celula cur = celulas[i][0];
+            while (cur != null) {
+                if (sb.length() > 0) sb.append(' ');
+                sb.append(cur.valor);
+                cur = cur.dir;
             }
-            System.out.println();
+            contador++;
+            System.out.println(contador);
+            System.out.println(sb.toString());
         }
     }
-
-    /* ---------- Leitura de uma matriz da entrada ---------- */
 
     static Matriz lerMatriz(Scanner sc, int l, int c) {
         Matriz m = new Matriz(l, c);
@@ -94,8 +98,7 @@ public class Matriz {
         for (int t = 0; t < casos; t++) {
             int l1 = sc.nextInt(), c1 = sc.nextInt();
             Matriz m1 = lerMatriz(sc, l1, c1);
-            int l2 = sc.nextInt(), c2 = sc.nextInt();
-            Matriz m2 = lerMatriz(sc, l2, c2);
+            Matriz m2 = lerMatriz(sc, l1, c1);
 
             m1.mostrarDiagonalPrincipal();
             m2.mostrarDiagonalSecundaria();

@@ -219,7 +219,7 @@ void heapsort_parcial(Restaurante** arr, int n) {
     /* Phase 2: for remaining elements, replace root if smaller */
     for (int i = K; i < n; i++) {
         if (comparar(arr[i], arr[0]) < 0) {
-            arr[0] = arr[i]; movimentacoes++;
+            trocar(arr, 0, i);
             heapify(arr, lim, 0);
         }
     }
@@ -248,9 +248,8 @@ int main() {
     clock_t t1 = clock();
     double tempo = ((double)(t1 - t0)) / CLOCKS_PER_SEC * 1000.0;
 
-    int saida = n < K ? n : K;
     char buffer[2048];
-    for (int i = 0; i < saida; i++) {
+    for (int i = 0; i < n; i++) {
         formatar_restaurante(arr[i], buffer);
         printf("%s\n", buffer);
     }
