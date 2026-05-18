@@ -2,8 +2,6 @@ import java.util.Scanner;
 
 public class Matriz {
 
-    static int contador = 0;
-
     static class Celula {
         int valor;
         Celula dir, baixo;
@@ -47,13 +45,10 @@ public class Matriz {
     public void mostrarDiagonalPrincipal() {
         int dim = Math.min(linhas, colunas);
         StringBuilder sb = new StringBuilder();
-        Celula cur = celulas[0][0];
         for (int i = 0; i < dim; i++) {
             if (i > 0) sb.append(' ');
             sb.append(celulas[i][i].valor);
         }
-        contador++;
-        System.out.println(contador);
         System.out.println(sb.toString());
     }
 
@@ -64,8 +59,6 @@ public class Matriz {
             if (i > 0) sb.append(' ');
             sb.append(celulas[i][colunas - 1 - i].valor);
         }
-        contador++;
-        System.out.println(contador);
         System.out.println(sb.toString());
     }
 
@@ -78,8 +71,6 @@ public class Matriz {
                 sb.append(cur.valor);
                 cur = cur.dir;
             }
-            contador++;
-            System.out.println(contador);
             System.out.println(sb.toString());
         }
     }
