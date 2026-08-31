@@ -15,9 +15,7 @@ public class Ciframento {
 
                 char c = input.charAt(j);
 
-                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-                    c = (char) (c + 3);
-                }
+                c = (char) (c + 3);
 
                 resultado += c;
             }

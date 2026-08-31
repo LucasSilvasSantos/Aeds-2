@@ -38,6 +38,9 @@ public class validasenha {
         Scanner sc = new Scanner(System.in);
         while (sc.hasNextLine()) {
             String password = sc.nextLine();
+            if (password.equals("FIM")) {
+                break;
+            }
             if (isValidPassword(password)) {
                 System.out.println("SIM");
             } else {

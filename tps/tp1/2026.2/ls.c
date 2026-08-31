@@ -18,49 +18,37 @@ bool ehConsoante(char c) {
     return false;
 }
 
-bool somenteVogais(char str[]) {
-    int i = 0;
-    if (str[0] == '\0') return false;
-    while (str[i] != '\0') {
-        if (!ehVogal(str[i])) return false;
-        i++;
-    }
-    return true;
+bool somenteVogais(char str[], int i) {
+    if (i == 0 && str[0] == '\0') return false;
+    if (str[i] == '\0') return true;
+    if (!ehVogal(str[i])) return false;
+    return somenteVogais(str, i + 1);
 }
 
-bool somenteConsoantes(char str[]) {
-    int i = 0;
-    if (str[0]== '\0') return false;
-    while (str[i] != '\0') {
-        if (!ehConsoante(str[i])) return false;
-        i++;
-    }
-    return true;
+bool somenteConsoantes(char str[], int i) {
+    if (i == 0 && str[0] == '\0') return false;
+    if (str[i] == '\0') return true;
+    if (!ehConsoante(str[i])) return false;
+    return somenteConsoantes(str, i + 1);
 }
 
-bool ehInteiro(char str[]) {
-    int i = 0;
-    if (str[0] == '\0') return false;
-    while (str[i] != '\0') {
-        if (!(str[i] >= '0' && str[i] <= '9')) return false;
-        i++;
-    }
-    return true;
+bool ehInteiro(char str[], int i) {
+    if (i == 0 && str[0] == '\0') return false;
+    if (str[i] == '\0') return true;
+    if (!(str[i] >= '0' && str[i] <= '9')) return false;
+    return ehInteiro(str, i + 1);
 }
 
-bool ehReal(char str[]) {
-    int i = 0, separador = 0;
-    if (str[0] == '\0') return false;
-    while (str[i] != '\0') {
-        if (str[i] == '.' || str[i] == ',') {
-            separador++;
-            if (separador > 1) return false;
-        } else if (!(str[i] >= '0' && str[i] <= '9')) {
-            return false;
-        }
-        i++;
+bool ehReal(char str[], int i, int separador) {
+    if (i == 0 && str[0] == '\0') return false;
+    if (str[i] == '\0') return true;
+    if (str[i] == '.' || str[i] == ',') {
+        separador++;
+        if (separador > 1) return false;
+    } else if (!(str[i] >= '0' && str[i] <= '9')) {
+        return false;
     }
-    return (separador == 1);
+    return ehReal(str, i + 1, separador);
 }
 
 // === Programa principal ===
@@ -75,10 +63,10 @@ int main() {
             break;
         }
 
-        int x1 = somenteVogais(entrada);
-        int x2 = somenteConsoantes(entrada);
-        int x3 = ehInteiro(entrada);
-        int x4 = ehReal(entrada);
+        int x1 = somenteVogais(entrada, 0);
+        int x2 = somenteConsoantes(entrada, 0);
+        int x3 = ehInteiro(entrada, 0);
+        int x4 = ehReal(entrada, 0, 0);
 
         printf("%s %s %s %s\n",
                x1 ? "SIM" : "NAO",

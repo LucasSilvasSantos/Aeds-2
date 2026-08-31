@@ -1,5 +1,12 @@
 import java.util.Scanner;
 public class somadeditosR{
+  public static int somaDigitos(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return n % 10 + somaDigitos(n / 10);
+}
+
   public static int stringParaInt(String entrada) {
     int numero = 0;
     for (int i = 0; i < entrada.length(); i++) {
@@ -18,12 +25,9 @@ public class somadeditosR{
         if (entrada.equals("FIM")) {
     break;
 }
-       int n ,soma = 0;
+       int n ,soma;
        n = stringParaInt(entrada);
-     while( n > 0) {
-     soma+= n%10; // pegando o resto da divisão  e armazenando na variavel soma
-     n/=10; // dividindo o numero por 10  com  objetivo de remover o ultimo digito
-     }
+       soma = somaDigitos(n);
        System.out.println(soma);
       }
 

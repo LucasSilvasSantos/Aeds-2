@@ -2,22 +2,27 @@ import java.util.Scanner;
 
 
 public class InversaoStringR{
+
+    public static String inverter(String s, int i) {
+        if (i < 0) {
+            return "";
+        }
+        return s.charAt(i) + inverter(s, i - 1);
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-       boolean continueReading = true;
-        while (sc.hasNextLine() && continueReading) {
+        while (sc.hasNextLine()) {
             String s = sc.nextLine(); // lê uma linha
-            String invertida = "";
-            
-            for (int i = s.length() - 1; i >= 0; i--) {
-                invertida += s.charAt(i);
-            }
-          if (s.charAt(0)== 'F' && s.charAt(1) == 'I' && s.charAt(2) == 'M') {
+
+            if (s.length() == 3 && s.charAt(0) == 'F' && s.charAt(1) == 'I' && s.charAt(2) == 'M') {
                 break;
             }
-             System.out.println(invertida);
+
+            String invertida = inverter(s, s.length() - 1);
+            System.out.println(invertida);
         }
- 
+
         sc.close();
     }
 }
